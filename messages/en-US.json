@@ -1,0 +1,12 @@
+{
+  "Header": {
+    "title": "SILA BOS"
+  },
+  "Common": {
+    "dashboard": "Dashboard",
+    "catalog": "Catalog",
+    "orders": "Orders",
+    "ledger": "Ledger",
+    "inventory": "Inventory"
+  }
+}

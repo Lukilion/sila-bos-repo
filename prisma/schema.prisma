@@ -1,0 +1,281 @@
+// prisma/schema.prisma
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+enum Role {
+  SUDO
+  ADMIN
+  INVESTOR
+  SOURCING_AGENT
+  SELLER
+}
+
+enum OrderStatus {
+  PENDING
+  APPROVED
+  PACKED
+  DISPATCHED
+  DELIVERED
+  RECONCILED
+  CANCELLED
+}
+
+enum PaymentType {
+  CASH
+  CREDIT_UDHAAR
+  CONSIGNMENT
+  BANK_TRANSFER
+}
+
+enum LedgerType {
+  INVESTOR_POOL
+  PROCUREMENT_OUTFLOW
+  OPERATIONAL_EXPENSE
+  SELLER_INFLOW
+  COMMISSION_PAYOUT
+  TAX_LIABILITY
+}
+
+model Tenant {
+  id          String              @id @default(uuid())
+  name        String
+  code        String              @unique
+  createdAt   DateTime            @default(now())
+  updatedAt   DateTime            @updatedAt
+  users       User[]
+  products    Product[]
+  warehouses  Warehouse[]
+  orders      Order[]
+  expenses    Expense[]
+  investments Investment[]
+  ledgers     TransactionLedger[]
+
+  @@map("tenants")
+}
+
+model User {
+  id           String              @id @default(uuid())
+  tenantId     String
+  tenant       Tenant              @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  email        String              @unique
+  passwordHash String
+  fullName     String
+  phone        String              @unique
+  role         Role                @default(SELLER)
+  creditLimit  Decimal             @default(0.00) @db.Decimal(14, 2)
+  creditDays   Int                 @default(30)
+  isActive     Boolean             @default(true)
+  createdAt    DateTime            @default(now())
+  updatedAt    DateTime            @updatedAt
+
+  orders       Order[]             @relation("SellerOrders")
+  procurements Order[]             @relation("AgentProcurements")
+  investments  Investment[]
+  auditLogs    AuditLog[]
+  ledgers      TransactionLedger[]
+
+  @@index([tenantId, role])
+  @@map("users")
+}
+
+model Warehouse {
+  id        String         @id @default(uuid())
+  tenantId  String
+  tenant    Tenant         @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  name      String
+  location  String
+  bins      InventoryBin[]
+  createdAt DateTime       @default(now())
+  updatedAt DateTime       @updatedAt
+
+  @@map("warehouses")
+}
+
+model InventoryBin {
+  id          String    @id @default(uuid())
+  warehouseId String
+  warehouse   Warehouse @relation(fields: [warehouseId], references: [id], onDelete: Cascade)
+  productId   String
+  product     Product   @relation(fields: [productId], references: [id], onDelete: Cascade)
+  binCode     String    // Path code: "Zone-B-Rack-04-Bin-12"
+  quantity    Int       @default(0)
+  updatedAt   DateTime  @updatedAt
+
+  @@unique([warehouseId, productId, binCode])
+  @@map("inventory_bins")
+}
+
+model Category {
+  id       String    @id @default(uuid())
+  nameEn   String
+  nameUr   String
+  products Product[]
+
+  @@map("categories")
+}
+
+model Product {
+  id            String         @id @default(uuid())
+  tenantId      String
+  tenant        Tenant         @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  categoryId    String
+  category      Category       @relation(fields: [categoryId], references: [id])
+  sku           String         @unique
+  barcode       String?        @unique
+  nameEn        String
+  nameUr        String
+  unitCost      Decimal        @db.Decimal(12, 2) // Batch average rate
+  salePrice     Decimal        @db.Decimal(12, 2) // Standard wholesale unit price
+  bulkPrice     Decimal        @db.Decimal(12, 2) // Lot / Carton discounted rate
+  moq           Int            @default(1)
+  minStockAlert Int            @default(10)
+  createdAt     DateTime       @default(now())
+  updatedAt     DateTime       @updatedAt
+
+  inventoryBins InventoryBin[]
+  orderItems    OrderItem[]
+  damages       DamageLog[]
+
+  @@index([tenantId, sku, barcode])
+  @@map("products")
+}
+
+model Order {
+  id              String             @id @default(uuid())
+  tenantId        String
+  tenant          Tenant             @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  orderNumber     String             @unique
+  sellerId        String
+  seller          User               @relation("SellerOrders", fields: [sellerId], references: [id])
+  sourcingAgentId String?
+  sourcingAgent   User?              @relation("AgentProcurements", fields: [sourcingAgentId], references: [id])
+  status          OrderStatus        @default(PENDING)
+  paymentType     PaymentType        @default(CREDIT_UDHAAR)
+  subTotal        Decimal            @db.Decimal(14, 2)
+  taxAmount       Decimal            @default(0.00) @db.Decimal(12, 2)
+  discount        Decimal            @default(0.00) @db.Decimal(12, 2)
+  totalAmount     Decimal            @db.Decimal(14, 2)
+  createdAt       DateTime           @default(now())
+  updatedAt       DateTime           @updatedAt
+
+  items           OrderItem[]
+  fbrLog          FbrInvoiceLog?
+  ledgers         TransactionLedger[]
+
+  @@index([tenantId, sellerId, status])
+  @@map("orders")
+}
+
+model OrderItem {
+  id        String   @id @default(uuid())
+  orderId   String
+  order     Order    @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  productId String
+  product   Product  @relation(fields: [productId], references: [id])
+  quantity  Int
+  unitPrice Decimal  @db.Decimal(12, 2)
+  totalCost Decimal  @db.Decimal(12, 2)
+
+  @@map("order_items")
+}
+
+model TransactionLedger {
+  id          String     @id @default(uuid())
+  tenantId    String
+  tenant      Tenant     @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  userId      String?
+  user        User?      @relation(fields: [userId], references: [id])
+  orderId     String?
+  order       Order?     @relation(fields: [orderId], references: [id])
+  type        LedgerType
+  debit       Decimal    @default(0.00) @db.Decimal(14, 2)
+  credit      Decimal    @default(0.00) @db.Decimal(14, 2)
+  balance     Decimal    @db.Decimal(14, 2)
+  description String
+  createdAt   DateTime   @default(now())
+
+  @@index([tenantId, type, createdAt])
+  @@map("transaction_ledgers")
+}
+
+model Expense {
+  id          String   @id @default(uuid())
+  tenantId    String
+  tenant      Tenant   @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  category    String   // Logistics, Shop Rent, Labour, Packaging, Damages
+  amount      Decimal  @db.Decimal(12, 2)
+  description String
+  loggedBy    String
+  createdAt   DateTime @default(now())
+
+  @@map("expenses")
+}
+
+model Investment {
+  id          String   @id @default(uuid())
+  tenantId    String
+  tenant      Tenant   @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  investorId  String
+  investor    User     @relation(fields: [investorId], references: [id])
+  amount      Decimal  @db.Decimal(14, 2)
+  profitShare Decimal  @db.Decimal(5, 2) // Direct percentage allocation
+  active      Boolean  @default(true)
+  createdAt   DateTime @default(now())
+
+  @@map("investments")
+}
+
+model DamageLog {
+  id          String   @id @default(uuid())
+  productId   String
+  product     Product  @relation(fields: [productId], references: [id])
+  quantity    Int
+  costLoss    Decimal  @db.Decimal(12, 2)
+  vendorFault Boolean  @default(false)
+  notes       String
+  createdAt   DateTime @default(now())
+
+  @@map("damage_logs")
+}
+
+model FbrInvoiceLog {
+  id               String   @id @default(uuid())
+  orderId          String   @unique
+  order            Order    @relation(fields: [orderId], references: [id])
+  fbrInvoiceNumber String   @unique
+  qrCodeData       String
+  status           String   // SUCCESS, FAILED, QUEUED
+  responsePayload  Json?
+  createdAt        DateTime @default(now())
+
+  @@map("fbr_invoice_logs")
+}
+
+model AuditLog {
+  id        String   @id @default(uuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id])
+  action    String   // PRICE_OVERRIDE, BALANCE_ADJUSTMENT, ROLE_ELEVATION
+  entity    String
+  entityId  String
+  changes   Json
+  ipAddress String?
+  createdAt DateTime @default(now())
+
+  @@map("audit_logs")
+}
+model EmailOtp {
+  id        String   @id @default(cuid())
+  email     String
+  otp       String
+  expiresAt DateTime
+  createdAt DateTime @default(now())
+
+  @@index([email])
+}

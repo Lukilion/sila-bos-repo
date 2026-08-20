@@ -1,0 +1,12 @@
+{
+  "Header": {
+    "title": "صلہ"
+  },
+  "Common": {
+    "dashboard": "صفحہء انتظامی",
+    "catalog": "کیٹلاگ",
+    "orders": "آرڈرز",
+    "ledger": "کھاتہ",
+    "inventory": "انوینٹری"
+  }
+}
