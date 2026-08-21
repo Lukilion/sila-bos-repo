@@ -16,7 +16,7 @@ const ROLE_PERMISSIONS: Record<string, string[]> = {
   "/checkout": ["SUDO", "ADMIN", "SELLER"],
 };
 
-export async function middleware(req: NextRequest) {
+export async function proxy(req: NextRequest) {
   const { pathname } = req.nextUrl;
   const token = req.cookies.get("auth_token")?.value;
 
