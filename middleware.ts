@@ -11,9 +11,14 @@ const ROLE_PERMISSIONS: Record<string, string[]> = {
   "/sudo": ["SUDO"],
   "/admin": ["SUDO", "ADMIN"],
   "/investor": ["SUDO", "ADMIN", "INVESTOR"],
-  "/sourcing": ["SUDO", "ADMIN", "SOURCING_AGENT"],
-  "/catalog": ["SUDO", "ADMIN", "SOURCING_AGENT", "SELLER"],
-  "/checkout": ["SUDO", "ADMIN", "SELLER"],
+  "/sourcing": ["SUDO", "ADMIN", "SOURCING_AGENT", "DISTRIBUTOR"],
+  "/inventory": ["SUDO", "ADMIN", "WAREHOUSE_MANAGER", "SOURCING_AGENT", "DISTRIBUTOR", "SELLER"],
+  "/finance": ["SUDO", "ADMIN", "INVESTOR"],
+  "/orders": ["SUDO", "ADMIN", "WAREHOUSE_MANAGER", "SOURCING_AGENT", "DISTRIBUTOR", "SELLER"],
+  "/customers": ["SUDO", "ADMIN", "SOURCING_AGENT", "DISTRIBUTOR", "SELLER"],
+  "/catalog": ["SUDO", "ADMIN", "SOURCING_AGENT", "SELLER", "DISTRIBUTOR"],
+  "/checkout": ["SUDO", "ADMIN", "SELLER", "DISTRIBUTOR"],
+  "/dashboard": ["SUDO", "ADMIN", "SOURCING_AGENT", "INVESTOR", "SELLER", "DISTRIBUTOR", "WAREHOUSE_MANAGER"],
 };
 
 export async function middleware(req: NextRequest) {
@@ -24,21 +29,19 @@ export async function middleware(req: NextRequest) {
   const locale = segments[0] === "ur-PK" || segments[0] === "en-US" ? segments[0] : "en-US";
   const cleanPath = "/" + segments.slice(segments[0] === "ur-PK" || segments[0] === "en-US" ? 1 : 0).join("/");
   
-  const matchedRoute = Object.keys(ROLE_PERMISSIONS).find((route) => cleanPath.startsWith(route));
-
-  // If public route (e.g. login, root, etc.) or no role requirement
-  if (!matchedRoute) {
+  // Public auth routes
+  if (cleanPath === "/login" || cleanPath.startsWith("/login/") || cleanPath === "/signup") {
     return NextResponse.next();
   }
 
-  // Allow catalog viewing by default if no token or let them browse
+  const matchedRoute = Object.keys(ROLE_PERMISSIONS).find((route) => cleanPath.startsWith(route));
+
+  // If visiting protected route or unspecified inner page without token, redirect to login
   if (!token) {
-    // If accessing catalog, allow seamless preview or redirect
-    if (cleanPath === "/catalog" || cleanPath === "/catalog/") {
-      return NextResponse.next();
-    }
     const loginUrl = new URL(`/${locale}/login`, req.url);
-    loginUrl.searchParams.set("callbackUrl", pathname);
+    if (cleanPath !== "/" && cleanPath !== "") {
+      loginUrl.searchParams.set("callbackUrl", pathname);
+    }
     return NextResponse.redirect(loginUrl);
   }
 
@@ -47,7 +50,7 @@ export async function middleware(req: NextRequest) {
     const userRole = payload.role as string;
     const tenantId = payload.tenantId as string;
 
-    const allowedRoles = ROLE_PERMISSIONS[matchedRoute];
+    const allowedRoles = matchedRoute ? ROLE_PERMISSIONS[matchedRoute] : undefined;
 
     if (allowedRoles && !allowedRoles.includes(userRole)) {
       // If role does not match, allow gracefully redirecting to their allowed dashboard

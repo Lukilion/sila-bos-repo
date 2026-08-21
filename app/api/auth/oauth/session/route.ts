@@ -109,22 +109,33 @@ export async function POST(req: NextRequest) {
       maxAge: 60 * 60 * 24 * 7,
     });
 
-    let redirectPath = "/catalog";
-    switch (user.role) {
-      case "SUDO":
+    let redirectPath = "/dashboard";
+    const userRoleStr = (user.role || role || "").toString().toLowerCase();
+    switch (userRoleStr) {
+      case "sudo":
         redirectPath = "/sudo";
         break;
-      case "ADMIN":
+      case "admin":
         redirectPath = "/admin";
         break;
-      case "INVESTOR":
+      case "investor":
         redirectPath = "/investor";
         break;
-      case "SOURCING_AGENT":
+      case "sourcing":
+      case "sourcing_agent":
         redirectPath = "/sourcing";
         break;
+      case "distributor":
+      case "inventory":
+      case "warehouse_manager":
+        redirectPath = "/inventory";
+        break;
+      case "finance":
+        redirectPath = "/finance";
+        break;
+      case "seller":
       default:
-        redirectPath = "/catalog";
+        redirectPath = "/dashboard";
         break;
     }
 

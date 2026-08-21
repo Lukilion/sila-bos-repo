@@ -11,9 +11,34 @@ const JWT_SECRET = new TextEncoder().encode(
   process.env.JWT_SECRET || "fallback-secret-key-shah-alami"
 );
 
+function getRoleRedirectPath(role: string, locale: string): string {
+  const r = (role || "").toLowerCase();
+  switch (r) {
+    case "sudo":
+      return `/${locale}/sudo`;
+    case "admin":
+      return `/${locale}/admin`;
+    case "investor":
+      return `/${locale}/investor`;
+    case "sourcing":
+    case "sourcing_agent":
+      return `/${locale}/sourcing`;
+    case "distributor":
+    case "inventory":
+    case "warehouse_manager":
+      return `/${locale}/inventory`;
+    case "finance":
+      return `/${locale}/finance`;
+    case "seller":
+    default:
+      return `/${locale}/dashboard`;
+  }
+}
+
 export async function loginAction(formData: FormData, locale: string) {
   const identifier = (formData.get("identifier") as string || formData.get("phone") as string || "").trim();
   const password = (formData.get("password") as string || "");
+  const selectedRole = (formData.get("role") as string || "").trim().toLowerCase();
 
   if (!identifier || !password) {
     return { error: "Please provide your phone number or email and password." };
@@ -50,9 +75,11 @@ export async function loginAction(formData: FormData, locale: string) {
     return { error: "Incorrect password. Please try again." };
   }
 
+  const effectiveRole = selectedRole || user.role;
+
   const token = await new SignJWT({
     sub: user.id,
-    role: user.role,
+    role: effectiveRole,
     tenantId: user.tenantId,
     phone: user.phone,
     name: user.fullName,
@@ -72,19 +99,7 @@ export async function loginAction(formData: FormData, locale: string) {
     maxAge: 60 * 60 * 24 * 7,
   });
 
-  switch (user.role) {
-    case "SUDO":
-      redirect(`/${locale}/sudo`);
-    case "ADMIN":
-      redirect(`/${locale}/admin`);
-    case "INVESTOR":
-      redirect(`/${locale}/investor`);
-    case "SOURCING_AGENT":
-      redirect(`/${locale}/sourcing`);
-    case "SELLER":
-    default:
-      redirect(`/${locale}/catalog`);
-  }
+  redirect(getRoleRedirectPath(effectiveRole, locale));
 }
 
 export async function signUpAction(formData: FormData, locale: string) {
@@ -147,6 +162,8 @@ export async function signUpAction(formData: FormData, locale: string) {
       roleToAssign = Role.SUDO;
       break;
     case "admin":
+    case "finance":
+    case "inventory":
       roleToAssign = Role.ADMIN;
       break;
     case "investor":
@@ -195,7 +212,7 @@ export async function signUpAction(formData: FormData, locale: string) {
 
   const token = await new SignJWT({
     sub: user.id,
-    role: user.role,
+    role: requestedRole || user.role,
     tenantId: user.tenantId,
     phone: user.phone,
     name: user.fullName,
@@ -215,19 +232,7 @@ export async function signUpAction(formData: FormData, locale: string) {
     maxAge: 60 * 60 * 24 * 7,
   });
 
-  switch (user.role) {
-    case "SUDO":
-      redirect(`/${locale}/sudo`);
-    case "ADMIN":
-      redirect(`/${locale}/admin`);
-    case "INVESTOR":
-      redirect(`/${locale}/investor`);
-    case "SOURCING_AGENT":
-      redirect(`/${locale}/sourcing`);
-    case "SELLER":
-    default:
-      redirect(`/${locale}/catalog`);
-  }
+  redirect(getRoleRedirectPath(requestedRole, locale));
 }
 
 export async function logoutAction(locale: string) {
