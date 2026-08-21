@@ -475,7 +475,7 @@ export const NAVIGATION_CONFIG: NavigationConfig = {
       icon: "FilePlus",
       shortcut: "N",
       actionKey: "sales_order",
-      href: "/orders/sales?action=new",
+      href: "/new-order",
       permittedRoles: ["ADMIN", "SALES_REP", "SUDO"],
     },
     {

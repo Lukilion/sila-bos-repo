@@ -86,11 +86,12 @@ export default async function OrdersPage({
 
         <div className="flex items-center gap-2.5 shrink-0">
           <Link
-            href={`/${locale}/catalog`}
+            href={`/${locale}/new-order`}
+            id="orders-new-order-btn"
             className="neu-btn-primary h-10 px-4 rounded-2xl text-xs font-bold transition flex items-center gap-2 cursor-pointer active:scale-95"
           >
             <NavIcon name="Plus" className="w-4 h-4" />
-            <span>{isUrdu ? "نیا آرڈر بنائیں" : "New Order"}</span>
+            <span>{isUrdu ? "نیا آرڈر بنائیں (+ New Order)" : "+ New Order"}</span>
           </Link>
         </div>
       </div>
