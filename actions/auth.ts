@@ -93,19 +93,21 @@ export async function signUpAction(formData: FormData, locale: string) {
   const passwordHash = await bcrypt.hash(password, 10);
   const email = `${normalizedPhone}@sila.local`;
 
-  // Map requested role to Prisma Role enum if possible
+  // Map requested role to Prisma Role enum
   let roleToAssign: Role = Role.SELLER;
   switch ((requestedRole || "").toLowerCase()) {
     case "sudo":
-      roleToAssign = Role.SUDO as Role;
+      roleToAssign = Role.SUDO;
       break;
     case "admin":
-      roleToAssign = Role.ADMIN as Role;
+      roleToAssign = Role.ADMIN;
       break;
+    case "investor":
+      roleToAssign = Role.INVESTOR;
+      break;
+    case "sourcing_agent":
     case "distributor":
-      // try DISTRIBUTOR if exists else fallback to SOURCING_AGENT
-      // keep as string cast—Prisma will validate at runtime
-      roleToAssign = (Role as any).DISTRIBUTOR || Role.SOURCING_AGENT;
+      roleToAssign = Role.SOURCING_AGENT;
       break;
     case "seller":
     default:

@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { prisma } from "@/lib/prisma";
 
 export default async function AdminDashboard({
@@ -14,7 +15,8 @@ export default async function AdminDashboard({
   ]);
 
   const totalStock = products.reduce(
-    (sum, p) => sum + p.inventoryBins.reduce((iSum, inv) => iSum + inv.quantity, 0),
+    (sum: number, p: any) =>
+      sum + (p.inventoryBins || []).reduce((iSum: number, inv: any) => iSum + (inv.quantity || 0), 0),
     0
   );
 
@@ -50,8 +52,8 @@ export default async function AdminDashboard({
         <div className="neu-card p-6">
           <h3 className="text-base font-semibold text-neu-text mb-4">Godowns Overview</h3>
           <div className="flex flex-col gap-3">
-            {warehouses.map((w) => {
-              const count = w.bins.reduce((s, i) => s + i.quantity, 0);
+            {warehouses.map((w: any) => {
+              const count = (w.bins || []).reduce((s: number, i: any) => s + (i.quantity || 0), 0);
               return (
                 <div key={w.id} className="p-4 bg-neu-pressed rounded-xl shadow-neu-inset flex justify-between items-center">
                   <div>
@@ -73,14 +75,14 @@ export default async function AdminDashboard({
             </div>
           ) : (
             <div className="flex flex-col gap-3">
-              {orders.map((o) => (
+              {orders.map((o: any) => (
                 <div key={o.id} className="p-3 bg-neu-pressed rounded-xl shadow-neu-inset flex justify-between items-center text-xs">
                   <div>
-                    <div className="font-semibold text-neu-text">{o.seller.fullName}</div>
-                    <div className="text-[10px] text-neu-muted font-mono">ID: {o.id.slice(-6)}</div>
+                    <div className="font-semibold text-neu-text">{o.seller?.fullName || "Seller"}</div>
+                    <div className="text-[10px] text-neu-muted font-mono">ID: {String(o.id).slice(-6)}</div>
                   </div>
                   <div className="text-end">
-                    <div className="font-bold text-green-400 font-mono">PKR {Number(o.totalAmount).toLocaleString()}</div>
+                    <div className="font-bold text-green-400 font-mono">PKR {Number(o.totalAmount || 0).toLocaleString()}</div>
                     <div className="text-[10px] text-neu-accent">{o.status}</div>
                   </div>
                 </div>

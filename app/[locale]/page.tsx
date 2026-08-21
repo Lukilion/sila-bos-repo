@@ -1,3 +1,11 @@
-export default function LocalePage() {
-  return <main className="flex flex-1 items-center justify-center">Locale page</main>;
+import { redirect } from "next/navigation";
+
+export default async function LocalePage({
+  params,
+}: {
+  params: Promise<{ locale: string }>;
+}) {
+  const { locale } = await params;
+  redirect(`/${locale}/dashboard`);
 }
+

@@ -1,0 +1,56 @@
+{
+  "entities": {
+    "users": {
+      "title": "User",
+      "description": "User profiles synchronized from Firebase Auth and local session with role-based access control",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string", "description": "User UID matching auth.uid" },
+        "email": { "type": "string", "format": "email", "description": "Email address" },
+        "fullName": { "type": "string", "description": "Display name" },
+        "phone": { "type": "string", "description": "Phone number" },
+        "role": { "type": "string", "enum": ["SUDO", "ADMIN", "INVESTOR", "SOURCING_AGENT", "SELLER"], "description": "Wholesale access role" },
+        "provider": { "type": "string", "description": "Auth provider (password, google, github, microsoft, otp)" },
+        "photoURL": { "type": "string", "description": "Avatar URL" },
+        "tenantId": { "type": "string", "description": "Tenant ID (e.g. Shah Alami Hub)" },
+        "creditLimit": { "type": "number", "description": "Credit limit in PKR" },
+        "creditDays": { "type": "number", "description": "Credit terms in days" },
+        "isActive": { "type": "boolean", "description": "Whether user account is active" },
+        "createdAt": { "type": "string", "format": "date-time", "description": "Creation timestamp" },
+        "updatedAt": { "type": "string", "format": "date-time", "description": "Last update timestamp" }
+      },
+      "required": ["id", "email", "role", "createdAt"]
+    },
+    "emailOtps": {
+      "title": "Email OTP",
+      "description": "Transient 6-digit email verification OTPs with 10-minute expiry",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string", "description": "Unique verification id" },
+        "email": { "type": "string", "format": "email", "description": "Target email" },
+        "otp": { "type": "string", "description": "6-digit OTP code" },
+        "purpose": { "type": "string", "enum": ["login", "signup", "reset"], "description": "OTP purpose" },
+        "expiresAt": { "type": "string", "format": "date-time", "description": "Expiry timestamp" },
+        "createdAt": { "type": "string", "format": "date-time", "description": "Creation timestamp" },
+        "verified": { "type": "boolean", "description": "Whether OTP has been consumed" }
+      },
+      "required": ["email", "otp", "expiresAt", "createdAt"]
+    },
+    "authAuditLogs": {
+      "title": "Auth Audit Log",
+      "description": "Audit trail for sign in, sign up, OTP requests, and OAuth authentications",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string", "description": "Audit entry ID" },
+        "userId": { "type": "string", "description": "User ID if resolved" },
+        "email": { "type": "string", "description": "Target email" },
+        "action": { "type": "string", "description": "Action performed (e.g. LOGIN_OTP, GOOGLE_SIGNIN, SIGNUP)" },
+        "provider": { "type": "string", "description": "Auth provider" },
+        "ipAddress": { "type": "string", "description": "IP or client origin" },
+        "status": { "type": "string", "enum": ["SUCCESS", "FAILED"], "description": "Status of event" },
+        "timestamp": { "type": "string", "format": "date-time", "description": "Timestamp" }
+      },
+      "required": ["action", "status", "timestamp"]
+    }
+  }
+}

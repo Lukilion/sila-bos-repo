@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { prisma } from "@/lib/prisma";
 
 export default async function SourcingHubPage({
@@ -42,7 +43,7 @@ export default async function SourcingHubPage({
             <div>
               <label className="text-xs text-neu-muted font-medium mb-1 block">Category</label>
               <select className="neu-input w-full px-4 py-2 text-sm text-neu-text">
-                {categories.map((c) => (
+                {categories.map((c: any) => (
                   <option key={c.id} value={c.id}>
                     {c.nameEn}
                   </option>
@@ -53,7 +54,7 @@ export default async function SourcingHubPage({
             <div>
               <label className="text-xs text-neu-muted font-medium mb-1 block">Target Godown / Warehouse</label>
               <select className="neu-input w-full px-4 py-2 text-sm text-neu-text">
-                {warehouses.map((w) => (
+                {warehouses.map((w: any) => (
                   <option key={w.id} value={w.id}>
                     {w.name}
                   </option>
@@ -93,7 +94,7 @@ export default async function SourcingHubPage({
           <div>
             <h3 className="text-base font-semibold text-neu-text mb-2">Godown Capacities</h3>
             <div className="flex flex-col gap-3">
-              {warehouses.map((w) => (
+              {warehouses.map((w: any) => (
                 <div key={w.id} className="p-3 bg-neu-pressed rounded-xl shadow-neu-inset">
                   <div className="text-xs font-semibold text-neu-text">{w.name}</div>
                   <div className="text-[11px] text-neu-muted">{w.location}</div>

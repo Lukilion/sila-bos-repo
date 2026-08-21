@@ -1,0 +1,6 @@
+{
+  "name": "Sila BOS",
+  "description": "Wholesale business operating system for Shah Alami market inventory, godowns, dual-pricing catalog, FBR digital invoicing, triple-entry khata ledger, and multi-tenant IAM governance.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

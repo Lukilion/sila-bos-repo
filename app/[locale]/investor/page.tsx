@@ -1,11 +1,11 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { prisma } from "@/lib/prisma";
-import { LedgerType } from "@prisma/client";
 
-const formatLedgerType = (type: LedgerType) =>
-  type
+const formatLedgerType = (type: string) =>
+  (type || "")
     .replace(/_/g, " ")
     .toLowerCase()
-    .replace(/\b\w/g, (char) => char.toUpperCase());
+    .replace(/\b\w/g, (char: string) => char.toUpperCase());
 
 export default async function InvestorKhataPage({
   params,
@@ -25,20 +25,20 @@ export default async function InvestorKhataPage({
     include: { investor: true },
   });
 
-  const inflowTypes: LedgerType[] = [LedgerType.INVESTOR_POOL, LedgerType.SELLER_INFLOW];
-  const outflowTypes: LedgerType[] = [
-    LedgerType.PROCUREMENT_OUTFLOW,
-    LedgerType.OPERATIONAL_EXPENSE,
-    LedgerType.COMMISSION_PAYOUT,
+  const inflowTypes: string[] = ["INVESTOR_POOL", "SELLER_INFLOW"];
+  const outflowTypes: string[] = [
+    "PROCUREMENT_OUTFLOW",
+    "OPERATIONAL_EXPENSE",
+    "COMMISSION_PAYOUT",
   ];
 
   const totalInflows = transactions
-    .filter((t) => inflowTypes.includes(t.type))
-    .reduce((sum, t) => sum + Number(t.credit), 0);
+    .filter((t: any) => inflowTypes.includes(t.type))
+    .reduce((sum: number, t: any) => sum + Number(t.credit || 0), 0);
 
   const totalOutflows = transactions
-    .filter((t) => outflowTypes.includes(t.type))
-    .reduce((sum, t) => sum + Number(t.debit), 0);
+    .filter((t: any) => outflowTypes.includes(t.type))
+    .reduce((sum: number, t: any) => sum + Number(t.debit || 0), 0);
 
   const netBalance = totalInflows - totalOutflows;
 
@@ -101,20 +101,20 @@ export default async function InvestorKhataPage({
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-neu-light/10">
-                  {transactions.map((tx) => (
+                  {transactions.map((tx: any) => (
                     <tr key={tx.id} className="hover:bg-neu-pressed/40 transition">
                       <td className="py-3 font-semibold text-neu-accent">{formatLedgerType(tx.type)}</td>
                       <td className="py-3 text-neu-muted max-w-xs truncate">
                         {tx.description || tx.order?.orderNumber || tx.user?.fullName || "Ledger entry"}
                       </td>
                       <td className="py-3 text-end text-rose-400 font-mono">
-                        {Number(tx.debit) > 0 ? `PKR ${Number(tx.debit).toLocaleString()}` : "—"}
+                        {Number(tx.debit || 0) > 0 ? `PKR ${Number(tx.debit).toLocaleString()}` : "—"}
                       </td>
                       <td className="py-3 text-end text-green-400 font-mono">
-                        {Number(tx.credit) > 0 ? `PKR ${Number(tx.credit).toLocaleString()}` : "—"}
+                        {Number(tx.credit || 0) > 0 ? `PKR ${Number(tx.credit).toLocaleString()}` : "—"}
                       </td>
                       <td className="py-3 text-end font-bold text-neu-text font-mono">
-                        PKR {Number(tx.balance).toLocaleString()}
+                        PKR {Number(tx.balance || 0).toLocaleString()}
                       </td>
                     </tr>
                   ))}
@@ -133,19 +133,19 @@ export default async function InvestorKhataPage({
               <p className="text-xs text-neu-muted">No investor stakes configured.</p>
             ) : (
               <div className="flex flex-col gap-3">
-                {investments.map((inv) => (
+                {investments.map((inv: any) => (
                   <div
                     key={inv.id}
                     className="p-3 bg-neu-pressed rounded-xl shadow-neu-inset flex justify-between items-center"
                   >
                     <div>
-                      <div className="text-xs font-semibold text-neu-text">{inv.investor.fullName}</div>
+                      <div className="text-xs font-semibold text-neu-text">{inv.investor?.fullName || "Investor"}</div>
                       <div className="text-[10px] text-neu-muted">
-                        Capital: PKR {Number(inv.amount).toLocaleString()}
+                        Capital: PKR {Number(inv.amount || 0).toLocaleString()}
                       </div>
                     </div>
                     <span className="text-xs font-bold text-neu-accent">
-                      {Number(inv.profitShare)}% Share
+                      {Number(inv.profitShare || 0)}% Share
                     </span>
                   </div>
                 ))}

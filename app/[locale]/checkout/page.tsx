@@ -8,7 +8,7 @@ export default async function CheckoutPage({
   const { locale } = await params;
 
   const invoice = generateFBRInvoicePayload({
-    invoiceNumber: `INV-${Date.now().toString().slice(-6)}`,
+    invoiceNumber: "INV-849201",
     posId: "SHAH-ALAMI-POS-01",
     totalBill: 12500,
   });

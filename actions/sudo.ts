@@ -1,13 +1,19 @@
 "use server";
 
 import { prisma } from "@/lib/prisma";
+import { Role } from "@prisma/client";
 import { cookies } from "next/headers";
-import { jwtVerify } from "jose";
+import { jwtVerify, JWTPayload } from "jose";
 import { redirect } from "next/navigation";
 
 const JWT_SECRET = new TextEncoder().encode(
   process.env.JWT_SECRET || "fallback-secret-key-shah-alami"
 );
+
+interface CustomAuthPayload extends JWTPayload {
+  role?: string;
+  tenantId?: string;
+}
 
 export async function changeUserRole(formData: FormData) {
   const userId = formData.get("userId") as string;
@@ -18,14 +24,14 @@ export async function changeUserRole(formData: FormData) {
   const token = cookieStore.get("auth_token")?.value;
   if (!token) throw new Error("Not authenticated.");
 
-  const { payload } = await jwtVerify(token, JWT_SECRET as any).catch(() => {
+  const { payload } = await jwtVerify<CustomAuthPayload>(token, JWT_SECRET).catch(() => {
     throw new Error("Invalid token.");
   });
 
-  const actorRole = (payload as any).role;
+  const actorRole = payload.role;
   if (actorRole !== "SUDO") throw new Error("Unauthorized.");
 
-  await prisma.user.update({ where: { id: userId }, data: { role: newRole as any } });
+  await prisma.user.update({ where: { id: userId }, data: { role: newRole as Role } });
 
   // redirect back to sudo dashboard
   redirect(`/${locale}/sudo`);
@@ -51,14 +57,14 @@ export async function createDevSudo(formData: FormData) {
 
   await prisma.user.upsert({
     where: { phone },
-    update: { passwordHash, role: "SUDO" as any, fullName },
+    update: { passwordHash, role: Role.SUDO, fullName },
     create: {
       phone,
       fullName,
       email: `${phone}@sila.local`,
       passwordHash,
       tenantId: defaultTenant.id,
-      role: "SUDO" as any,
+      role: Role.SUDO,
     },
   });
 

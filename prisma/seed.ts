@@ -78,7 +78,7 @@ main()
     try {
       const { prisma } = await import("../lib/prisma");
       await prisma.$disconnect();
-    } catch (e) {
+    } catch {
       // ignore
     }
   });
