@@ -1,12 +1,17 @@
 import type { Metadata } from "next";
-import { Inter, Noto_Nastaliq_Urdu } from "next/font/google";
+import { Inter, Geist_Mono, Noto_Nastaliq_Urdu } from "next/font/google";
 import { NextIntlClientProvider } from "next-intl";
 import { getMessages } from "next-intl/server";
 import { EnterpriseShell } from "@/components/navigation/EnterpriseShell";
 import "../globals.css";
 
 const inter = Inter({
-  variable: "--font-inter",
+  variable: "--font-sans",
+  subsets: ["latin"],
+});
+
+const geistMono = Geist_Mono({
+  variable: "--font-mono",
   subsets: ["latin"],
 });
 
@@ -32,10 +37,10 @@ export default async function RootLayout({
   const direction = locale === "ur-PK" ? "rtl" : "ltr";
 
   return (
-    <html lang={locale} dir={direction} className="dark">
+    <html lang={locale} dir={direction}>
       <body
         suppressHydrationWarning
-        className={`${inter.variable} ${notoNastaleeq.variable} bg-slate-950 text-slate-100 antialiased min-h-screen font-sans`}
+        className={`${inter.variable} ${geistMono.variable} ${notoNastaleeq.variable} bg-[#EDEBF8] text-[#6C7293] antialiased min-h-screen font-sans`}
       >
         <NextIntlClientProvider messages={messages}>
           <EnterpriseShell locale={locale}>

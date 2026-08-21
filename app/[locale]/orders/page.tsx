@@ -2,7 +2,6 @@ import React from "react";
 import Link from "next/link";
 import { NavIcon } from "@/components/navigation/NavIcon";
 
-
 export default async function OrdersPage({
   params,
 }: {
@@ -59,30 +58,36 @@ export default async function OrdersPage({
   ];
 
   return (
-    <div className="space-y-6">
-      {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 p-5 rounded-2xl bg-slate-900 border border-slate-800 shadow-md">
-        <div>
+    <div className="space-y-6 select-none">
+      {/* Header Banner */}
+      <div
+        id="orders-header"
+        className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 p-5 sm:p-6 rounded-2xl bg-[#EDEBF8]"
+        style={{
+          boxShadow: "-8px -8px 18px #FFFFFF, 8px 8px 18px #C5C3D8",
+        }}
+      >
+        <div className="space-y-1">
           <div className="flex items-center gap-2">
-            <span className="px-2 py-0.5 rounded bg-indigo-500/20 text-indigo-400 text-[10px] font-mono font-bold">
+            <span className="neu-pill-badge bg-[#EDEBF8] text-[#007BFF] font-mono">
               B2B DISPATCH & SALES
             </span>
-            <span className="text-xs text-slate-400">Order Management System</span>
+            <span className="text-label-12 text-[#7E8299]">Order Management System</span>
           </div>
-          <h1 className="text-xl font-bold text-white mt-1">
+          <h1 className="text-xl sm:text-2xl font-black text-[#3A3F58] tracking-tight">
             {isUrdu ? "تھوک آرڈرز اور ڈسپیچ ٹریکنگ" : "B2B Orders & Fulfillment Tracking"}
           </h1>
-          <p className="text-xs text-slate-400">
+          <p className="text-xs text-[#7E8299] max-w-xl text-copy-14">
             {isUrdu
               ? "ہول سیل بلک آرڈرز، ڈیلیوری گاڑیاں اور کسٹم پرائس ٹائرز۔"
               : "Bulk sales orders, dispatch delivery tracking, credit validation, and invoice generation."}
           </p>
         </div>
 
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-2.5 shrink-0">
           <Link
             href={`/${locale}/catalog`}
-            className="px-4 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-bold transition shadow-sm flex items-center gap-2"
+            className="neu-btn-primary h-10 px-4 rounded-2xl text-xs font-bold transition flex items-center gap-2 cursor-pointer active:scale-95"
           >
             <NavIcon name="Plus" className="w-4 h-4" />
             <span>{isUrdu ? "نیا آرڈر بنائیں" : "New Order"}</span>
@@ -90,20 +95,38 @@ export default async function OrdersPage({
         </div>
       </div>
 
-      {/* Orders Grid */}
-      <div className="p-5 rounded-2xl bg-slate-900 border border-slate-800 shadow-md space-y-4">
+      {/* Orders Grid Card */}
+      <div
+        id="orders-table-card"
+        className="p-5 sm:p-6 rounded-2xl bg-[#EDEBF8] space-y-4"
+        style={{
+          boxShadow: "-6px -6px 14px #FFFFFF, 6px 6px 14px #C5C3D8",
+        }}
+      >
         <div className="flex items-center justify-between">
-          <h2 className="text-sm font-bold text-white flex items-center gap-2">
-            <NavIcon name="ShoppingBag" className="w-4 h-4 text-indigo-400" />
+          <h2 className="text-heading-14 text-[#3A3F58] flex items-center gap-2">
+            <div
+              className="size-8 rounded-xl bg-[#EDEBF8] flex items-center justify-center text-[#007BFF]"
+              style={{
+                boxShadow: "-2px -2px 5px #FFFFFF, 2px 2px 5px #C5C3D8",
+              }}
+            >
+              <NavIcon name="ShoppingBag" className="w-4 h-4" />
+            </div>
             <span>{isUrdu ? "تمام بلک سیلز آرڈرز" : "All Bulk Wholesale Orders"}</span>
           </h2>
-          <span className="text-xs text-slate-400 font-mono">4 Orders Active</span>
+          <span className="text-xs text-[#7E8299] font-mono font-bold">4 Orders Active</span>
         </div>
 
-        <div className="overflow-x-auto">
+        <div
+          className="rounded-2xl p-2 bg-[#EDEBF8] overflow-x-auto"
+          style={{
+            boxShadow: "inset 3px 3px 6px #C5C3D8, inset -3px -3px 6px #FFFFFF",
+          }}
+        >
           <table className="w-full text-xs text-start">
             <thead>
-              <tr className="border-b border-slate-800 text-slate-400 text-[11px] font-semibold">
+              <tr className="text-[#7E8299] text-[11px] font-semibold border-b border-[#C5C3D8]/50">
                 <th className="py-2.5 px-3 text-start">Order ID</th>
                 <th className="py-2.5 px-3 text-start">Customer & Location</th>
                 <th className="py-2.5 px-3 text-start">Items & Volume</th>
@@ -112,37 +135,40 @@ export default async function OrdersPage({
                 <th className="py-2.5 px-3 text-start">Status</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-slate-800/60">
+            <tbody className="divide-y divide-[#C5C3D8]/30">
               {orders.map((ord) => (
-                <tr key={ord.id} className="hover:bg-slate-800/40 transition">
+                <tr key={ord.id} className="hover:bg-[#E2E0EE]/40 transition">
                   <td className="py-3 px-3">
-                    <div className="font-mono font-bold text-indigo-400">{ord.id}</div>
-                    <div className="text-[10px] text-slate-500">{ord.date}</div>
+                    <div className="font-mono font-bold text-[#007BFF]">{ord.id}</div>
+                    <div className="text-[10px] text-[#7E8299]">{ord.date}</div>
                   </td>
                   <td className="py-3 px-3">
-                    <div className="font-bold text-white">{ord.customer}</div>
-                    <div className="text-[10px] text-slate-400">{ord.location}</div>
+                    <div className="font-bold text-[#3A3F58]">{ord.customer}</div>
+                    <div className="text-[10px] text-[#7E8299]">{ord.location}</div>
                   </td>
                   <td className="py-3 px-3">
-                    <div className="text-slate-200">{ord.items}</div>
-                    <div className="text-[10px] text-indigo-400 font-medium">{ord.tier}</div>
+                    <div className="text-[#6C7293] font-semibold">{ord.items}</div>
+                    <div className="text-[10px] text-[#007BFF] font-medium">{ord.tier}</div>
                   </td>
-                  <td className="py-3 px-3 font-mono font-bold text-white">{ord.amount}</td>
+                  <td className="py-3 px-3 font-mono font-bold text-[#3A3F58]">{ord.amount}</td>
                   <td className="py-3 px-3">
-                    <div className="flex items-center gap-1.5 text-slate-300">
-                      <NavIcon name="Truck" className="w-3.5 h-3.5 text-slate-400" />
+                    <div className="flex items-center gap-1.5 text-[#6C7293]">
+                      <NavIcon name="Truck" className="w-3.5 h-3.5 text-[#7E8299]" />
                       <span>{ord.rider}</span>
                     </div>
                   </td>
                   <td className="py-3 px-3">
                     <span
-                      className={`px-2.5 py-0.5 rounded-full text-[10px] font-bold ${
+                      className={`neu-pill-badge bg-[#EDEBF8] ${
                         ord.status === "Delivered"
-                          ? "bg-emerald-500/20 text-emerald-300"
+                          ? "text-emerald-600"
                           : ord.status === "Dispatched"
-                          ? "bg-indigo-500/20 text-indigo-300"
-                          : "bg-amber-500/20 text-amber-300"
+                          ? "text-[#007BFF]"
+                          : "text-amber-600"
                       }`}
+                      style={{
+                        boxShadow: "inset 1px 1px 3px #C5C3D8, inset -1px -1px 3px #FFFFFF",
+                      }}
                     >
                       {ord.status}
                     </span>

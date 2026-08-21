@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { useParams, useRouter } from "next/navigation";
 import {
   auth,
@@ -18,12 +18,91 @@ import {
   ArrowRight,
   RefreshCw,
   Lock,
+  Eye,
+  EyeOff,
   CheckCircle2,
   AlertCircle,
+  KeyRound,
+  ChevronDown,
+  Store,
+  Truck,
+  Shield,
+  ShieldAlert,
+  PieChart,
+  Boxes,
+  Layers,
+  Wallet,
 } from "lucide-react";
 import confetti from "canvas-confetti";
 
-type AuthMode = "otp" | "social" | "password";
+type AuthMode = "password" | "otp" | "social";
+
+const PORTAL_ROLES = [
+  {
+    id: "seller",
+    titleEn: "Seller / Retail Merchant",
+    titleUr: "سیلر / ریٹیل دکاندار",
+    descEn: "POS, Wholesale Orders, Catalog & Khata",
+    descUr: "پی او ایس، تھوک آرڈرز، کاتالوگ، ادھار کھاتہ",
+    icon: Store,
+  },
+  {
+    id: "distributor",
+    titleEn: "Distributor / Wholesaler",
+    titleUr: "ڈسٹری بیوٹر / ہول سیلر",
+    descEn: "Wholesale Lots, Bulk Inventory, Dispatch Bins",
+    descUr: "تھوک مال، بلک انوینٹری، ڈسپیچ گودام",
+    icon: Truck,
+  },
+  {
+    id: "admin",
+    titleEn: "Operations Admin",
+    titleUr: "آپریشنز ایڈمن",
+    descEn: "Staff Control, KYC Verification & Analytics",
+    descUr: "سٹاف کنٹرول، تصدیق، اینالیٹکس ڈیش بورڈ",
+    icon: Shield,
+  },
+  {
+    id: "sudo",
+    titleEn: "Super Admin (Sudo Central)",
+    titleUr: "سوڈو سپروائزر (Sudo Root)",
+    descEn: "Root System Architecture & System Overrides",
+    descUr: "سسٹم آرکیٹیکچر، مکمل گلوبل کنٹرول",
+    icon: ShieldAlert,
+  },
+  {
+    id: "investor",
+    titleEn: "Investor Partner",
+    titleUr: "انویسٹر پارٹنر (Capital Pool)",
+    descEn: "Portfolio Equity, Revenue Streams & Dividends",
+    descUr: "منافع، آمدن اسٹریمز، سرمایہ کاری شراکت",
+    icon: PieChart,
+  },
+  {
+    id: "sourcing",
+    titleEn: "Sourcing & Procurement",
+    titleUr: "سورسنگ و پروکیورمنٹ",
+    descEn: "Mill Contracts, Bulk Factory POs & Sourcing",
+    descUr: "فیکٹری سورسنگ، سپلائر معاہدے، بلک خریداری",
+    icon: Layers,
+  },
+  {
+    id: "inventory",
+    titleEn: "Warehouse & Inventory",
+    titleUr: "گودام و انوینٹری مینیجر",
+    descEn: "Multi-Zone Bins, Barcodes & Dispatches",
+    descUr: "زون ریف، بارکوڈز، اسٹاک آڈٹ اور ترسیل",
+    icon: Boxes,
+  },
+  {
+    id: "finance",
+    titleEn: "Finance & Accounts",
+    titleUr: "فنانس و کھاتہ جات",
+    descEn: "Ledger Reconciliation, FBR Invoicing & Khata",
+    descUr: "لیجر کھاتہ، ڈیجیٹل انوائسز اور وصولیاں",
+    icon: Wallet,
+  },
+];
 
 export default function AuthPage() {
   const params = useParams();
@@ -32,14 +111,18 @@ export default function AuthPage() {
   const isUrdu = locale === "ur-PK";
 
   const [isSignUp, setIsSignUp] = useState(false);
-  const [authMode, setAuthMode] = useState<AuthMode>("otp");
+  const [authMode, setAuthMode] = useState<AuthMode>("password");
   const [selectedRole, setSelectedRole] = useState<string>("seller");
+  const [isRoleDropdownOpen, setIsRoleDropdownOpen] = useState(false);
+  const dropdownRef = useRef<HTMLDivElement>(null);
 
   // Form fields
   const [fullName, setFullName] = useState("");
-  const [email, setEmail] = useState("");
   const [phone, setPhone] = useState("");
   const [password, setPassword] = useState("");
+  const [email, setEmail] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
+  const [rememberMe, setRememberMe] = useState(true);
 
   // OTP State
   const [otpSent, setOtpSent] = useState(false);
@@ -52,6 +135,34 @@ export default function AuthPage() {
   const [socialLoading, setSocialLoading] = useState<string | null>(null);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
+
+  const activeRoleConfig =
+    PORTAL_ROLES.find((r) => r.id === selectedRole) || PORTAL_ROLES[0];
+
+  // Close dropdown on outside click
+  useEffect(() => {
+    function handleClickOutside(event: MouseEvent) {
+      if (
+        dropdownRef.current &&
+        !dropdownRef.current.contains(event.target as Node)
+      ) {
+        setIsRoleDropdownOpen(false);
+      }
+    }
+    function handleKeyDown(event: KeyboardEvent) {
+      if (event.key === "Escape") {
+        setIsRoleDropdownOpen(false);
+      }
+    }
+    if (isRoleDropdownOpen) {
+      document.addEventListener("mousedown", handleClickOutside);
+      document.addEventListener("keydown", handleKeyDown);
+    }
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+      document.removeEventListener("keydown", handleKeyDown);
+    };
+  }, [isRoleDropdownOpen]);
 
   // Countdown timer for resend OTP
   useEffect(() => {
@@ -96,7 +207,71 @@ export default function AuthPage() {
     setOtpValues(newOtp);
   };
 
-  // 1. Trigger Email OTP Send
+  // 1. Phone + Password Submission (Primary Authentication)
+  const handlePasswordSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    setErrorMessage(null);
+    setSuccessMessage(null);
+
+    if (!phone.trim()) {
+      setErrorMessage(isUrdu ? "موبائل فون نمبر درج کریں" : "Please enter your phone number.");
+      return;
+    }
+    if (!password) {
+      setErrorMessage(isUrdu ? "پاس ورڈ درج کریں" : "Please enter your password.");
+      return;
+    }
+    if (isSignUp && !fullName.trim()) {
+      setErrorMessage(isUrdu ? "مکمل نام درج کریں" : "Please enter your full name.");
+      return;
+    }
+
+    setPending(true);
+
+    try {
+      const formData = new FormData();
+      formData.append("phone", phone.trim());
+      formData.append("password", password);
+      formData.append("role", selectedRole);
+      if (isSignUp) formData.append("fullName", fullName.trim());
+
+      const res = isSignUp
+        ? await signUpAction(formData, locale)
+        : await loginAction(formData, locale);
+
+      if (res?.error) {
+        setErrorMessage(res.error);
+        setPending(false);
+      } else {
+        confetti({
+          particleCount: 70,
+          spread: 60,
+          origin: { y: 0.6 },
+          colors: ["#007BFF", "#0A84FF", "#10B981"],
+        });
+        setSuccessMessage(
+          isUrdu
+            ? "لاگ ان کامیاب! سسٹم میں داخل ہو رہے ہیں..."
+            : "Authentication successful! Redirecting..."
+        );
+      }
+    } catch (err: unknown) {
+      // In Next.js, redirect() throws an internal NEXT_REDIRECT error which is caught here
+      if (
+        err &&
+        typeof err === "object" &&
+        "digest" in err &&
+        typeof (err as { digest?: unknown }).digest === "string" &&
+        (err as { digest: string }).digest.includes("NEXT_REDIRECT")
+      ) {
+        return;
+      }
+      setErrorMessage(err instanceof Error ? err.message : "Authentication error occurred.");
+      setPending(false);
+    }
+  };
+
+  // 2. Trigger Email OTP Send
   const handleSendOtp = async (e?: React.FormEvent) => {
     if (e) e.preventDefault();
     setErrorMessage(null);
@@ -143,7 +318,7 @@ export default function AuthPage() {
     }
   };
 
-  // 2. Verify Email OTP & Complete Login/Signup
+  // 3. Verify Email OTP & Complete Login/Signup
   const handleVerifyOtp = async (e: React.FormEvent) => {
     e.preventDefault();
     setErrorMessage(null);
@@ -177,7 +352,7 @@ export default function AuthPage() {
         particleCount: 80,
         spread: 60,
         origin: { y: 0.6 },
-        colors: ["#15a0fa", "#007BFF", "#10B981"],
+        colors: ["#007BFF", "#0A84FF", "#10B981"],
       });
 
       setSuccessMessage(
@@ -195,7 +370,7 @@ export default function AuthPage() {
     }
   };
 
-  // 3. Social OAuth Direct Sign In (Google / Microsoft / GitHub)
+  // 4. Social OAuth Direct Sign In (Google / Microsoft / GitHub)
   const handleSocialLogin = async (providerName: "google" | "microsoft" | "github") => {
     setErrorMessage(null);
     setSuccessMessage(null);
@@ -232,7 +407,7 @@ export default function AuthPage() {
         particleCount: 80,
         spread: 70,
         origin: { y: 0.6 },
-        colors: ["#15a0fa", "#007BFF", "#8B5CF6"],
+        colors: ["#007BFF", "#0A84FF", "#8B5CF6"],
       });
 
       setSuccessMessage(
@@ -255,73 +430,92 @@ export default function AuthPage() {
     }
   };
 
-  // 4. Password Fallback Submission
-  const handlePasswordSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
-    e.preventDefault();
-    setErrorMessage(null);
-    setPending(true);
-
-    const formData = new FormData();
-    formData.append("phone", phone);
-    formData.append("password", password);
-    formData.append("role", selectedRole);
-    if (isSignUp) formData.append("fullName", fullName);
-
-    const res = isSignUp
-      ? await signUpAction(formData, locale)
-      : await loginAction(formData, locale);
-
-    if (res?.error) {
-      setErrorMessage(res.error);
-      setPending(false);
-    }
-  };
-
   return (
-    <div className="flex items-center justify-center min-h-[85vh] py-6 px-4">
-      <div className="neu-card w-full max-w-lg p-6 sm:p-8 transition-all">
+    <div className="flex items-center justify-center min-h-[85vh] py-8 px-4 select-none">
+      <div
+        id="login-setup-card"
+        className="w-full max-w-xl p-6 sm:p-8 rounded-3xl bg-[#EDEBF8] transition-all duration-300"
+        style={{
+          boxShadow: "-10px -10px 24px #FFFFFF, 10px 10px 24px #C5C3D8",
+        }}
+      >
         {/* Top Header Badge */}
-        <div className="flex items-center justify-between mb-4">
-          <div className="flex items-center gap-2 text-xs font-mono font-semibold text-[#15a0fa]">
-            <Sparkles className="w-4 h-4 text-[#15a0fa]" />
-            <span>SHAH ALAMI WHOLESALE BOS</span>
+        <div className="flex items-center justify-between mb-5">
+          <div className="flex items-center gap-2">
+            <div
+              className="size-7 rounded-xl bg-[#EDEBF8] flex items-center justify-center text-[#007BFF]"
+              style={{
+                boxShadow: "inset 2px 2px 4px #C5C3D8, inset -2px -2px 4px #FFFFFF",
+              }}
+            >
+              <Sparkles className="w-3.5 h-3.5 text-[#007BFF]" />
+            </div>
+            <span className="text-xs font-mono font-extrabold text-[#3A3F58] tracking-wider">
+              SHAH ALAMI WHOLESALE BOS
+            </span>
           </div>
-          <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-[#15a0fa]/15 text-[#15a0fa] border border-[#15a0fa]/30">
-            v3.4 Multi-Auth
+          <span
+            className="neu-pill-badge bg-[#EDEBF8] text-[#007BFF] font-mono text-[10px]"
+            style={{
+              boxShadow: "inset 1px 1px 3px #C5C3D8, inset -1px -1px 3px #FFFFFF",
+            }}
+          >
+            B2B Secure Access
           </span>
         </div>
 
         {/* Tab Switcher: Sign In vs Create Account */}
-        <div className="flex bg-neu-pressed p-1.5 rounded-2xl shadow-neu-inset mb-6">
+        <div
+          className="flex p-1.5 rounded-2xl bg-[#EDEBF8] mb-6"
+          style={{
+            boxShadow: "inset 3px 3px 6px #C5C3D8, inset -3px -3px 6px #FFFFFF",
+          }}
+        >
           <button
             type="button"
+            id="auth-tab-signin"
             onClick={() => {
               setIsSignUp(false);
               setOtpSent(false);
               setErrorMessage(null);
               setSuccessMessage(null);
             }}
-            className={`flex-1 py-2.5 text-xs sm:text-sm font-bold rounded-xl transition-all ${
+            className={`flex-1 py-2.5 text-xs sm:text-sm font-bold rounded-xl transition-all duration-200 cursor-pointer ${
               !isSignUp
-                ? "neu-card text-[#15a0fa] shadow-sm"
-                : "text-neu-muted hover:text-neu-text"
+                ? "bg-[#EDEBF8] text-[#007BFF]"
+                : "text-[#7E8299] hover:text-[#3A3F58]"
             }`}
+            style={
+              !isSignUp
+                ? {
+                    boxShadow: "-3px -3px 6px #FFFFFF, 3px 3px 6px #C5C3D8",
+                  }
+                : undefined
+            }
           >
             {isUrdu ? "لاگ ان (Sign In)" : "Sign In"}
           </button>
           <button
             type="button"
+            id="auth-tab-signup"
             onClick={() => {
               setIsSignUp(true);
               setOtpSent(false);
               setErrorMessage(null);
               setSuccessMessage(null);
             }}
-            className={`flex-1 py-2.5 text-xs sm:text-sm font-bold rounded-xl transition-all ${
+            className={`flex-1 py-2.5 text-xs sm:text-sm font-bold rounded-xl transition-all duration-200 cursor-pointer ${
               isSignUp
-                ? "neu-card text-[#15a0fa] shadow-sm"
-                : "text-neu-muted hover:text-neu-text"
+                ? "bg-[#EDEBF8] text-[#007BFF]"
+                : "text-[#7E8299] hover:text-[#3A3F58]"
             }`}
+            style={
+              isSignUp
+                ? {
+                    boxShadow: "-3px -3px 6px #FFFFFF, 3px 3px 6px #C5C3D8",
+                  }
+                : undefined
+            }
           >
             {isUrdu ? "نیا اکاؤنٹ (Sign Up)" : "Create Account"}
           </button>
@@ -329,128 +523,417 @@ export default function AuthPage() {
 
         {/* Title & Subtitle */}
         <div className="text-center mb-6">
-          <h2 className="text-xl sm:text-2xl font-bold text-neu-text">
+          <h2 className="text-xl sm:text-2xl font-black text-[#3A3F58] tracking-tight">
             {isSignUp
               ? isUrdu
                 ? "صلہ پورٹل پر نیا اکاؤنٹ بنائیں"
-                : "Join SILA Wholesale"
+                : "Register Wholesale Account"
               : isUrdu
                 ? "صلہ ہول سیل میں خوش آمدید"
-                : "Welcome Back to SILA"}
+                : "Wholesale Portal Login"}
           </h2>
-          <p className="text-xs text-neu-muted mt-1.5">
+          <p className="text-xs text-[#7E8299] mt-1.5 max-w-md mx-auto">
             {isSignUp
               ? isUrdu
-                ? "تھوک ریٹس، ادھار کھاتہ اور آرڈرز مینجمنٹ کیلئے فوری رجسٹر ہوں"
-                : "Activate instant wholesale lot pricing, credit khata & inventory"
+                ? "تھوک ریٹس، ادھار کھاتہ اور گودام مینجمنٹ کیلئے فون نمبر اور پاس ورڈ درج کریں"
+                : "Enter your mobile phone number and password to register your B2B account."
               : isUrdu
-                ? "اپنے تصدیق شدہ ای میل یا سوشل اکاؤنٹ سے لاگ ان کریں"
-                : "Verify via instant Email OTP or direct 1-click social sign-in"}
+                ? "اپنے رجسٹرڈ موبائل فون نمبر اور پاس ورڈ کے ساتھ لاگ ان کریں"
+                : "Enter your registered mobile phone number and password to access the system."}
           </p>
         </div>
 
-        {/* Role Selector */}
-        <div className="mb-5">
-          <label className="text-[11px] font-bold uppercase tracking-wider text-neu-muted mb-2 block">
-            {isUrdu ? "اپنا کردار منتخب کریں (Portal Role)" : "Select Portal Access Role"}
-          </label>
-          <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
-            {[
-              ["seller", isUrdu ? "سیلر / دکاندار" : "Seller"],
-              ["distributor", isUrdu ? "ڈسٹری بیوٹر" : "Distributor"],
-              ["admin", isUrdu ? "ایڈمن" : "Admin"],
-              ["sudo", isUrdu ? "سوڈو" : "Super Admin"],
-            ].map(([val, label]) => (
-              <button
-                key={val}
-                type="button"
-                onClick={() => setSelectedRole(val)}
-                className={`py-2 px-2 text-xs font-semibold rounded-xl text-center transition-all ${
-                  selectedRole === val
-                    ? "neu-card text-[#15a0fa] border border-[#15a0fa]/40 shadow-sm"
-                    : "neu-btn text-neu-muted hover:text-neu-text"
-                }`}
-              >
-                {label}
-              </button>
-            ))}
+        {/* Portal Access Role Dropdown Button */}
+        <div className="mb-5 relative z-40" id="portal-role-dropdown-container" ref={dropdownRef}>
+          <div className="flex items-center justify-between mb-1.5">
+            <label className="text-[11px] font-bold uppercase tracking-wider text-[#6C7293]">
+              {isUrdu ? "پورٹل رسائی کا انتخاب (Portal Access)" : "Select Portal Access"}
+            </label>
+            <span className="text-[10px] font-semibold text-[#007BFF] bg-[#007BFF]/10 px-2 py-0.5 rounded-full">
+              {PORTAL_ROLES.length} {isUrdu ? "پورٹلز دستیاب" : "Portals Available"}
+            </span>
           </div>
+
+          <button
+            type="button"
+            id="portal-role-dropdown-btn"
+            aria-haspopup="listbox"
+            aria-expanded={isRoleDropdownOpen}
+            onClick={() => setIsRoleDropdownOpen((prev) => !prev)}
+            className="w-full py-2.5 px-3.5 rounded-2xl bg-[#EDEBF8] flex items-center justify-between text-left transition-all duration-200 cursor-pointer active:scale-[0.99]"
+            style={{
+              boxShadow: isRoleDropdownOpen
+                ? "inset 2px 2px 5px #C5C3D8, inset -2px -2px 5px #FFFFFF"
+                : "-3px -3px 7px #FFFFFF, 3px 3px 7px #C5C3D8",
+            }}
+          >
+            <div className="flex items-center gap-3 min-w-0">
+              <div
+                className="size-9 rounded-xl bg-[#EDEBF8] flex items-center justify-center text-[#007BFF] shrink-0"
+                style={{
+                  boxShadow: "inset 2px 2px 4px #C5C3D8, inset -2px -2px 4px #FFFFFF",
+                }}
+              >
+                {activeRoleConfig?.icon ? (
+                  <activeRoleConfig.icon className="w-4 h-4 text-[#007BFF]" />
+                ) : (
+                  <Store className="w-4 h-4 text-[#007BFF]" />
+                )}
+              </div>
+              <div className="min-w-0">
+                <div className="text-xs font-black text-[#3A3F58] flex items-center gap-2">
+                  <span>{isUrdu ? activeRoleConfig?.titleUr : activeRoleConfig?.titleEn}</span>
+                </div>
+                <div className="text-[11px] text-[#7E8299] truncate font-medium">
+                  {isUrdu ? activeRoleConfig?.descUr : activeRoleConfig?.descEn}
+                </div>
+              </div>
+            </div>
+            <div className="flex items-center gap-1.5 pl-2">
+              <ChevronDown
+                className={`w-4 h-4 text-[#6C7293] shrink-0 transition-transform duration-200 ${
+                  isRoleDropdownOpen ? "rotate-180 text-[#007BFF]" : ""
+                }`}
+              />
+            </div>
+          </button>
+
+          {/* Dropdown Menu Popup */}
+          {isRoleDropdownOpen && (
+            <div
+              id="portal-role-dropdown-menu"
+              role="listbox"
+              aria-label="Select Portal"
+              className="absolute left-0 right-0 top-[calc(100%+6px)] z-50 p-2 rounded-2xl bg-[#EDEBF8] space-y-1 transition-all duration-200 max-h-80 overflow-y-auto border border-[#FFFFFF]/60"
+              style={{
+                boxShadow: "-8px -8px 20px #FFFFFF, 8px 8px 20px #C5C3D8",
+              }}
+            >
+              <div className="px-2 py-1 text-[10px] font-bold uppercase tracking-wider text-[#7E8299] border-b border-[#C5C3D8]/30 mb-1 flex items-center justify-between">
+                <span>{isUrdu ? "تمام پورٹل آپشنز" : "All Available Portals"}</span>
+                <span className="text-[#007BFF]">SILA B2B Network</span>
+              </div>
+              {PORTAL_ROLES.map((roleItem) => {
+                const isSelected = selectedRole === roleItem.id;
+                const RoleIcon = roleItem.icon;
+                return (
+                  <button
+                    key={roleItem.id}
+                    type="button"
+                    role="option"
+                    aria-selected={isSelected}
+                    id={`portal-option-${roleItem.id}`}
+                    onClick={() => {
+                      setSelectedRole(roleItem.id);
+                      setIsRoleDropdownOpen(false);
+                    }}
+                    className={`w-full p-2.5 rounded-xl flex items-center justify-between text-left transition-all duration-150 cursor-pointer ${
+                      isSelected
+                        ? "bg-[#EDEBF8] text-[#007BFF]"
+                        : "hover:bg-[#E4E2F1] text-[#3A3F58]"
+                    }`}
+                    style={
+                      isSelected
+                        ? {
+                            boxShadow:
+                              "inset 2px 2px 5px #C5C3D8, inset -2px -2px 5px #FFFFFF",
+                          }
+                        : undefined
+                    }
+                  >
+                    <div className="flex items-center gap-2.5 min-w-0">
+                      <div
+                        className={`size-8 rounded-lg flex items-center justify-center shrink-0 ${
+                          isSelected
+                            ? "bg-[#007BFF] text-white shadow-sm"
+                            : "bg-[#EDEBF8] text-[#6C7293]"
+                        }`}
+                        style={
+                          !isSelected
+                            ? {
+                                boxShadow:
+                                  "-2px -2px 4px #FFFFFF, 2px 2px 4px #C5C3D8",
+                              }
+                            : undefined
+                        }
+                      >
+                        <RoleIcon className="w-4 h-4" />
+                      </div>
+                      <div className="min-w-0">
+                        <div
+                          className={`text-xs font-bold ${
+                            isSelected ? "text-[#007BFF]" : "text-[#3A3F58]"
+                          }`}
+                        >
+                          {isUrdu ? roleItem.titleUr : roleItem.titleEn}
+                        </div>
+                        <div className="text-[10px] text-[#7E8299] truncate">
+                          {isUrdu ? roleItem.descUr : roleItem.descEn}
+                        </div>
+                      </div>
+                    </div>
+
+                    {isSelected && (
+                      <div className="flex items-center gap-1 shrink-0 pl-2">
+                        <CheckCircle2 className="w-4 h-4 text-[#007BFF]" />
+                      </div>
+                    )}
+                  </button>
+                );
+              })}
+            </div>
+          )}
         </div>
 
         {/* Auth Method Selector Pills */}
-        <div className="flex items-center justify-center gap-2 mb-6 border-b border-neu-muted/20 pb-4">
+        <div className="flex items-center justify-center gap-2 mb-6 border-b border-[#C5C3D8]/40 pb-4">
           <button
             type="button"
-            onClick={() => {
-              setAuthMode("otp");
-              setErrorMessage(null);
-            }}
-            className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-bold transition-all ${
-              authMode === "otp"
-                ? "bg-[#15a0fa] text-white shadow-md shadow-[#15a0fa]/30"
-                : "text-neu-muted hover:text-neu-text bg-neu-pressed/40"
-            }`}
-          >
-            <Mail className="w-3.5 h-3.5" />
-            <span>{isUrdu ? "ای میل OTP تصدیق" : "Email OTP (Fast)"}</span>
-          </button>
-
-          <button
-            type="button"
-            onClick={() => {
-              setAuthMode("social");
-              setErrorMessage(null);
-            }}
-            className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-bold transition-all ${
-              authMode === "social"
-                ? "bg-[#15a0fa] text-white shadow-md shadow-[#15a0fa]/30"
-                : "text-neu-muted hover:text-neu-text bg-neu-pressed/40"
-            }`}
-          >
-            <ShieldCheck className="w-3.5 h-3.5" />
-            <span>{isUrdu ? "سوشل لاگ ان" : "Direct OAuth"}</span>
-          </button>
-
-          <button
-            type="button"
+            id="auth-mode-password-btn"
             onClick={() => {
               setAuthMode("password");
               setErrorMessage(null);
             }}
-            className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-bold transition-all ${
+            className={`flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl text-xs font-bold transition-all cursor-pointer ${
               authMode === "password"
-                ? "bg-[#15a0fa] text-white shadow-md shadow-[#15a0fa]/30"
-                : "text-neu-muted hover:text-neu-text bg-neu-pressed/40"
+                ? "bg-[#007BFF] text-white shadow-md shadow-[#007BFF]/20"
+                : "bg-[#EDEBF8] text-[#7E8299] hover:text-[#3A3F58]"
             }`}
+            style={
+              authMode !== "password"
+                ? {
+                    boxShadow: "-2px -2px 4px #FFFFFF, 2px 2px 4px #C5C3D8",
+                  }
+                : undefined
+            }
           >
             <Lock className="w-3.5 h-3.5" />
-            <span>{isUrdu ? "پاس ورڈ" : "Password"}</span>
+            <span>{isUrdu ? "فون نمبر اور پاس ورڈ" : "Phone & Password"}</span>
+          </button>
+
+          <button
+            type="button"
+            id="auth-mode-otp-btn"
+            onClick={() => {
+              setAuthMode("otp");
+              setErrorMessage(null);
+            }}
+            className={`flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl text-xs font-bold transition-all cursor-pointer ${
+              authMode === "otp"
+                ? "bg-[#007BFF] text-white shadow-md shadow-[#007BFF]/20"
+                : "bg-[#EDEBF8] text-[#7E8299] hover:text-[#3A3F58]"
+            }`}
+            style={
+              authMode !== "otp"
+                ? {
+                    boxShadow: "-2px -2px 4px #FFFFFF, 2px 2px 4px #C5C3D8",
+                  }
+                : undefined
+            }
+          >
+            <Mail className="w-3.5 h-3.5" />
+            <span>{isUrdu ? "ای میل OTP تصدیق" : "Email OTP"}</span>
+          </button>
+
+          <button
+            type="button"
+            id="auth-mode-social-btn"
+            onClick={() => {
+              setAuthMode("social");
+              setErrorMessage(null);
+            }}
+            className={`flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl text-xs font-bold transition-all cursor-pointer ${
+              authMode === "social"
+                ? "bg-[#007BFF] text-white shadow-md shadow-[#007BFF]/20"
+                : "bg-[#EDEBF8] text-[#7E8299] hover:text-[#3A3F58]"
+            }`}
+            style={
+              authMode !== "social"
+                ? {
+                    boxShadow: "-2px -2px 4px #FFFFFF, 2px 2px 4px #C5C3D8",
+                  }
+                : undefined
+            }
+          >
+            <ShieldCheck className="w-3.5 h-3.5" />
+            <span>{isUrdu ? "سوشل لاگ ان" : "OAuth"}</span>
           </button>
         </div>
 
         {/* Alert / Feedback Messages */}
         {errorMessage && (
-          <div className="mb-5 p-3.5 bg-rose-500/10 border border-rose-500/30 rounded-2xl text-rose-500 text-xs flex items-start gap-2.5 shadow-sm">
-            <AlertCircle className="w-4 h-4 shrink-0 mt-0.5" />
-            <div className="flex-1">{errorMessage}</div>
+          <div
+            id="auth-error-banner"
+            className="mb-5 p-3.5 rounded-2xl bg-[#EDEBF8] text-rose-600 text-xs flex items-start gap-2.5"
+            style={{
+              boxShadow: "inset 2px 2px 5px #E0B4B4, inset -2px -2px 5px #FFFFFF",
+            }}
+          >
+            <AlertCircle className="w-4 h-4 shrink-0 mt-0.5 text-rose-600" />
+            <div className="flex-1 font-semibold">{errorMessage}</div>
           </div>
         )}
 
         {successMessage && (
-          <div className="mb-5 p-3.5 bg-emerald-500/10 border border-emerald-500/30 rounded-2xl text-emerald-600 dark:text-emerald-400 text-xs flex items-start gap-2.5 shadow-sm">
-            <CheckCircle2 className="w-4 h-4 shrink-0 mt-0.5 text-emerald-500" />
-            <div className="flex-1">{successMessage}</div>
+          <div
+            id="auth-success-banner"
+            className="mb-5 p-3.5 rounded-2xl bg-[#EDEBF8] text-emerald-600 text-xs flex items-start gap-2.5"
+            style={{
+              boxShadow: "inset 2px 2px 5px #B8DCC0, inset -2px -2px 5px #FFFFFF",
+            }}
+          >
+            <CheckCircle2 className="w-4 h-4 shrink-0 mt-0.5 text-emerald-600" />
+            <div className="flex-1 font-semibold">{successMessage}</div>
           </div>
         )}
 
-        {/* --- METHOD 1: EMAIL OTP VERIFICATION SYSTEM --- */}
+        {/* --- METHOD 1: PHONE NUMBER & PASSWORD LOGIN SETUP (PRIMARY) --- */}
+        {authMode === "password" && (
+          <form onSubmit={handlePasswordSubmit} className="space-y-4" id="phone-password-form">
+            {isSignUp && (
+              <div>
+                <label className="text-xs text-[#6C7293] font-bold mb-1.5 block">
+                  {isUrdu ? "مکمل نام / کاروباری نام" : "Full Name / Business Title"}
+                </label>
+                <div className="relative">
+                  <input
+                    name="fullName"
+                    id="input-fullname"
+                    type="text"
+                    value={fullName}
+                    onChange={(e) => setFullName(e.target.value)}
+                    placeholder={isUrdu ? "محمد علی" : "Haji Rafiq Wholesale"}
+                    className="w-full px-4 py-2.5 rounded-2xl bg-[#EDEBF8] text-xs text-[#3A3F58] font-medium outline-none transition"
+                    style={{
+                      boxShadow: "inset 2px 2px 5px #C5C3D8, inset -2px -2px 5px #FFFFFF",
+                    }}
+                    required
+                  />
+                </div>
+              </div>
+            )}
+
+            {/* Phone Number Field */}
+            <div>
+              <label className="text-xs text-[#6C7293] font-bold mb-1.5 flex items-center justify-between">
+                <span>{isUrdu ? "موبائل فون نمبر (Phone Number)" : "Mobile Phone Number"}</span>
+                <span className="text-[11px] text-[#7E8299] font-normal">e.g. 03001234567</span>
+              </label>
+              <div className="relative">
+                <input
+                  name="phone"
+                  id="input-phone-number"
+                  type="tel"
+                  value={phone}
+                  onChange={(e) => setPhone(e.target.value)}
+                  placeholder="03001234567"
+                  className="w-full pl-10 pr-4 py-2.5 rounded-2xl bg-[#EDEBF8] text-xs text-[#3A3F58] font-mono font-bold outline-none transition"
+                  style={{
+                    boxShadow: "inset 2px 2px 5px #C5C3D8, inset -2px -2px 5px #FFFFFF",
+                  }}
+                  required
+                />
+                <Smartphone className="w-4 h-4 text-[#007BFF] absolute left-3.5 top-3" />
+              </div>
+              <p className="text-[10px] text-[#7E8299] mt-1">
+                {isUrdu
+                  ? "اپنا 11 ہندسوں کا پاکستانی موبائل نمبر درج کریں"
+                  : "Enter your 11-digit registered Pakistani mobile number"}
+              </p>
+            </div>
+
+            {/* Password Field */}
+            <div>
+              <div className="flex items-center justify-between mb-1.5">
+                <label className="text-xs text-[#6C7293] font-bold">
+                  {isUrdu ? "پاس ورڈ (Password)" : "Password"}
+                </label>
+              </div>
+              <div className="relative">
+                <input
+                  name="password"
+                  id="input-password"
+                  type={showPassword ? "text" : "password"}
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  placeholder="••••••••"
+                  className="w-full pl-10 pr-10 py-2.5 rounded-2xl bg-[#EDEBF8] text-xs text-[#3A3F58] font-medium outline-none transition"
+                  style={{
+                    boxShadow: "inset 2px 2px 5px #C5C3D8, inset -2px -2px 5px #FFFFFF",
+                  }}
+                  required
+                />
+                <Lock className="w-4 h-4 text-[#007BFF] absolute left-3.5 top-3" />
+                <button
+                  type="button"
+                  id="toggle-password-visibility-btn"
+                  onClick={() => setShowPassword(!showPassword)}
+                  className="absolute right-3.5 top-2.5 text-[#7E8299] hover:text-[#3A3F58] cursor-pointer"
+                  title={showPassword ? "Hide password" : "Show password"}
+                >
+                  {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                </button>
+              </div>
+            </div>
+
+            {/* Remember Me & Assistance */}
+            <div className="flex items-center justify-between text-xs pt-1">
+              <label className="flex items-center gap-2 cursor-pointer text-[#6C7293]">
+                <input
+                  type="checkbox"
+                  checked={rememberMe}
+                  onChange={(e) => setRememberMe(e.target.checked)}
+                  className="rounded text-[#007BFF] focus:ring-0 cursor-pointer"
+                />
+                <span className="text-[11px] font-medium">
+                  {isUrdu ? "مجھے یاد رکھیں (Keep Signed In)" : "Keep me signed in"}
+                </span>
+              </label>
+
+              <span className="text-[11px] text-[#7E8299] font-mono">
+                BOS-SEC-V3
+              </span>
+            </div>
+
+            {/* Submit Button */}
+            <button
+              type="submit"
+              id="submit-auth-btn"
+              disabled={pending}
+              className="neu-btn-primary w-full py-3 rounded-2xl text-xs font-bold text-white transition flex items-center justify-center gap-2 cursor-pointer active:scale-95 disabled:opacity-50 mt-2"
+            >
+              {pending ? (
+                <>
+                  <RefreshCw className="w-4 h-4 animate-spin" />
+                  <span>{isUrdu ? "توثیق کی جا رہی ہے..." : "Authenticating..."}</span>
+                </>
+              ) : (
+                <>
+                  <KeyRound className="w-4 h-4" />
+                  <span>
+                    {isSignUp
+                      ? isUrdu
+                        ? "نیا اکاؤنٹ بنائیں"
+                        : "Create & Register Account"
+                      : isUrdu
+                        ? "سسٹم میں لاگ ان کریں"
+                        : "Sign In to Wholesale Portal"}
+                  </span>
+                  <ArrowRight className="w-4 h-4" />
+                </>
+              )}
+            </button>
+          </form>
+        )}
+
+        {/* --- METHOD 2: EMAIL OTP VERIFICATION SYSTEM --- */}
         {authMode === "otp" && (
-          <div className="space-y-4">
+          <div className="space-y-4" id="email-otp-section">
             {!otpSent ? (
               <form onSubmit={handleSendOtp} className="space-y-4">
                 {isSignUp && (
                   <div>
-                    <label className="text-xs text-neu-muted font-semibold mb-1.5 block">
+                    <label className="text-xs text-[#6C7293] font-bold mb-1.5 block">
                       {isUrdu ? "مکمل نام" : "Full Name / Business Title"}
                     </label>
                     <input
@@ -458,14 +941,17 @@ export default function AuthPage() {
                       value={fullName}
                       onChange={(e) => setFullName(e.target.value)}
                       placeholder={isUrdu ? "محمد علی" : "Muhammad Ali (Shah Alami Trader)"}
-                      className="neu-input w-full px-4 py-2.5 text-sm text-neu-text focus:ring-2 focus:ring-[#15a0fa]"
+                      className="w-full px-4 py-2.5 rounded-2xl bg-[#EDEBF8] text-xs text-[#3A3F58] outline-none font-medium"
+                      style={{
+                        boxShadow: "inset 2px 2px 5px #C5C3D8, inset -2px -2px 5px #FFFFFF",
+                      }}
                       required
                     />
                   </div>
                 )}
 
                 <div>
-                  <label className="text-xs text-neu-muted font-semibold mb-1.5 block">
+                  <label className="text-xs text-[#6C7293] font-bold mb-1.5 block">
                     {isUrdu ? "ای میل ایڈریس" : "Official Email Address"}
                   </label>
                   <div className="relative">
@@ -474,12 +960,15 @@ export default function AuthPage() {
                       value={email}
                       onChange={(e) => setEmail(e.target.value)}
                       placeholder="trader@shahalami.pk"
-                      className="neu-input w-full pl-10 pr-4 py-2.5 text-sm text-neu-text focus:ring-2 focus:ring-[#15a0fa]"
+                      className="w-full pl-10 pr-4 py-2.5 rounded-2xl bg-[#EDEBF8] text-xs text-[#3A3F58] outline-none font-medium"
+                      style={{
+                        boxShadow: "inset 2px 2px 5px #C5C3D8, inset -2px -2px 5px #FFFFFF",
+                      }}
                       required
                     />
-                    <Mail className="w-4 h-4 text-[#15a0fa] absolute left-3.5 top-3" />
+                    <Mail className="w-4 h-4 text-[#007BFF] absolute left-3.5 top-3" />
                   </div>
-                  <p className="text-[11px] text-neu-muted mt-1">
+                  <p className="text-[11px] text-[#7E8299] mt-1">
                     {isUrdu
                       ? "ہم آپ کے ای میل پر 6 ہندسوں کا ون ٹائم پاس ورڈ بھیجیں گے"
                       : "We'll send a 6-digit one-time passcode for secure instant verification"}
@@ -489,7 +978,7 @@ export default function AuthPage() {
                 <button
                   type="submit"
                   disabled={pending}
-                  className="neu-btn-primary w-full py-3 text-sm font-bold text-white rounded-xl shadow-lg shadow-[#15a0fa]/30 transition-all hover:opacity-95 active:scale-98 disabled:opacity-50 flex items-center justify-center gap-2"
+                  className="neu-btn-primary w-full py-3 rounded-2xl text-xs font-bold text-white transition flex items-center justify-center gap-2 cursor-pointer active:scale-95 disabled:opacity-50"
                 >
                   {pending ? (
                     <>
@@ -507,13 +996,18 @@ export default function AuthPage() {
             ) : (
               <form onSubmit={handleVerifyOtp} className="space-y-5">
                 <div className="text-center">
-                  <div className="inline-flex p-3 rounded-full bg-[#15a0fa]/15 text-[#15a0fa] mb-2 shadow-sm">
+                  <div
+                    className="inline-flex p-3 rounded-full bg-[#EDEBF8] text-[#007BFF] mb-2"
+                    style={{
+                      boxShadow: "inset 2px 2px 4px #C5C3D8, inset -2px -2px 4px #FFFFFF",
+                    }}
+                  >
                     <ShieldCheck className="w-6 h-6" />
                   </div>
-                  <p className="text-xs text-neu-muted">
+                  <p className="text-xs text-[#7E8299]">
                     {isUrdu ? "براہ کرم درج ذیل باکسز میں موصولہ 6 ہندسوں کا کوڈ درج کریں:" : "Enter the 6-digit passcode sent to:"}
                   </p>
-                  <span className="text-xs font-mono font-bold text-neu-text">{email}</span>
+                  <span className="text-xs font-mono font-bold text-[#3A3F58]">{email}</span>
                 </div>
 
                 {/* 6-Digit OTP Inputs */}
@@ -529,7 +1023,10 @@ export default function AuthPage() {
                       onChange={(e) => handleOtpChange(idx, e.target.value)}
                       onKeyDown={(e) => handleOtpKeyDown(idx, e)}
                       onPaste={handleOtpPaste}
-                      className="neu-input w-11 h-12 sm:w-12 sm:h-14 text-center text-lg sm:text-xl font-bold font-mono text-[#15a0fa] focus:ring-2 focus:ring-[#15a0fa] rounded-xl"
+                      className="w-11 h-12 sm:w-12 sm:h-14 rounded-2xl bg-[#EDEBF8] text-center text-lg sm:text-xl font-bold font-mono text-[#007BFF] outline-none"
+                      style={{
+                        boxShadow: "inset 2px 2px 5px #C5C3D8, inset -2px -2px 5px #FFFFFF",
+                      }}
                       autoFocus={idx === 0}
                     />
                   ))}
@@ -537,16 +1034,21 @@ export default function AuthPage() {
 
                 {/* Dev Mode OTP Quick Paste Helper */}
                 {devOtpHint && (
-                  <div className="p-2.5 rounded-xl bg-[#15a0fa]/10 border border-[#15a0fa]/30 flex items-center justify-between text-xs">
-                    <div className="flex items-center gap-1.5 text-neu-muted">
-                      <Sparkles className="w-3.5 h-3.5 text-[#15a0fa]" />
+                  <div
+                    className="p-2.5 rounded-2xl bg-[#EDEBF8] flex items-center justify-between text-xs"
+                    style={{
+                      boxShadow: "inset 2px 2px 4px #C5C3D8, inset -2px -2px 4px #FFFFFF",
+                    }}
+                  >
+                    <div className="flex items-center gap-1.5 text-[#7E8299]">
+                      <Sparkles className="w-3.5 h-3.5 text-[#007BFF]" />
                       <span>{isUrdu ? "فوری ٹیسٹ کوڈ:" : "Instant Test Code:"}</span>
-                      <strong className="font-mono text-[#15a0fa]">{devOtpHint}</strong>
+                      <strong className="font-mono text-[#007BFF]">{devOtpHint}</strong>
                     </div>
                     <button
                       type="button"
                       onClick={() => setOtpValues(devOtpHint.split(""))}
-                      className="text-[11px] font-bold text-[#15a0fa] hover:underline"
+                      className="text-[11px] font-bold text-[#007BFF] hover:underline cursor-pointer"
                     >
                       {isUrdu ? "آٹو فل کریں" : "Auto-fill"}
                     </button>
@@ -556,7 +1058,7 @@ export default function AuthPage() {
                 <button
                   type="submit"
                   disabled={pending || otpValues.join("").length !== 6}
-                  className="neu-btn-primary w-full py-3 text-sm font-bold text-white rounded-xl shadow-lg shadow-[#15a0fa]/30 transition-all hover:opacity-95 active:scale-98 disabled:opacity-50 flex items-center justify-center gap-2"
+                  className="neu-btn-primary w-full py-3 rounded-2xl text-xs font-bold text-white transition flex items-center justify-center gap-2 cursor-pointer active:scale-95 disabled:opacity-50"
                 >
                   {pending ? (
                     <>
@@ -579,7 +1081,7 @@ export default function AuthPage() {
                       setOtpSent(false);
                       setOtpValues(["", "", "", "", "", ""]);
                     }}
-                    className="text-neu-muted hover:text-neu-text transition"
+                    className="text-[#7E8299] hover:text-[#3A3F58] transition cursor-pointer"
                   >
                     {isUrdu ? "ای میل تبدیل کریں" : "Change Email"}
                   </button>
@@ -588,7 +1090,7 @@ export default function AuthPage() {
                     type="button"
                     disabled={timerSeconds > 0 || pending}
                     onClick={() => handleSendOtp()}
-                    className="font-semibold text-[#15a0fa] hover:underline disabled:opacity-40"
+                    className="font-semibold text-[#007BFF] hover:underline disabled:opacity-40 cursor-pointer"
                   >
                     {timerSeconds > 0
                       ? isUrdu
@@ -604,10 +1106,10 @@ export default function AuthPage() {
           </div>
         )}
 
-        {/* --- METHOD 2: DIRECT SOCIAL 1-CLICK OAUTH --- */}
+        {/* --- METHOD 3: DIRECT SOCIAL 1-CLICK OAUTH --- */}
         {authMode === "social" && (
-          <div className="space-y-4">
-            <p className="text-xs text-center text-neu-muted mb-2">
+          <div className="space-y-4" id="social-oauth-section">
+            <p className="text-xs text-center text-[#7E8299] mb-2">
               {isUrdu
                 ? "براہ راست گوگل، مائیکروسافٹ یا گٹ ہب سے سائن ان کریں:"
                 : "One-click authentication via your enterprise or personal OAuth account:"}
@@ -618,10 +1120,13 @@ export default function AuthPage() {
               type="button"
               disabled={!!socialLoading}
               onClick={() => handleSocialLogin("google")}
-              className="neu-btn w-full py-3 px-4 rounded-2xl flex items-center justify-center gap-3 text-xs sm:text-sm font-bold text-neu-text hover:text-[#15a0fa] transition shadow-sm active:scale-98 disabled:opacity-50"
+              className="w-full py-3 px-4 rounded-2xl bg-[#EDEBF8] flex items-center justify-center gap-3 text-xs sm:text-sm font-bold text-[#3A3F58] hover:text-[#007BFF] transition cursor-pointer active:scale-95 disabled:opacity-50"
+              style={{
+                boxShadow: "-4px -4px 8px #FFFFFF, 4px 4px 8px #C5C3D8",
+              }}
             >
               {socialLoading === "google" ? (
-                <RefreshCw className="w-5 h-5 animate-spin text-[#15a0fa]" />
+                <RefreshCw className="w-5 h-5 animate-spin text-[#007BFF]" />
               ) : (
                 <svg className="w-5 h-5" viewBox="0 0 24 24">
                   <path
@@ -650,10 +1155,13 @@ export default function AuthPage() {
               type="button"
               disabled={!!socialLoading}
               onClick={() => handleSocialLogin("microsoft")}
-              className="neu-btn w-full py-3 px-4 rounded-2xl flex items-center justify-center gap-3 text-xs sm:text-sm font-bold text-neu-text hover:text-[#15a0fa] transition shadow-sm active:scale-98 disabled:opacity-50"
+              className="w-full py-3 px-4 rounded-2xl bg-[#EDEBF8] flex items-center justify-center gap-3 text-xs sm:text-sm font-bold text-[#3A3F58] hover:text-[#007BFF] transition cursor-pointer active:scale-95 disabled:opacity-50"
+              style={{
+                boxShadow: "-4px -4px 8px #FFFFFF, 4px 4px 8px #C5C3D8",
+              }}
             >
               {socialLoading === "microsoft" ? (
-                <RefreshCw className="w-5 h-5 animate-spin text-[#15a0fa]" />
+                <RefreshCw className="w-5 h-5 animate-spin text-[#007BFF]" />
               ) : (
                 <svg className="w-5 h-5" viewBox="0 0 23 23">
                   <path fill="#f35325" d="M1 1h10v10H1z" />
@@ -670,12 +1178,15 @@ export default function AuthPage() {
               type="button"
               disabled={!!socialLoading}
               onClick={() => handleSocialLogin("github")}
-              className="neu-btn w-full py-3 px-4 rounded-2xl flex items-center justify-center gap-3 text-xs sm:text-sm font-bold text-neu-text hover:text-[#15a0fa] transition shadow-sm active:scale-98 disabled:opacity-50"
+              className="w-full py-3 px-4 rounded-2xl bg-[#EDEBF8] flex items-center justify-center gap-3 text-xs sm:text-sm font-bold text-[#3A3F58] hover:text-[#007BFF] transition cursor-pointer active:scale-95 disabled:opacity-50"
+              style={{
+                boxShadow: "-4px -4px 8px #FFFFFF, 4px 4px 8px #C5C3D8",
+              }}
             >
               {socialLoading === "github" ? (
-                <RefreshCw className="w-5 h-5 animate-spin text-[#15a0fa]" />
+                <RefreshCw className="w-5 h-5 animate-spin text-[#007BFF]" />
               ) : (
-                <svg className="w-5 h-5 fill-current" viewBox="0 0 24 24">
+                <svg className="w-5 h-5 fill-current text-[#3A3F58]" viewBox="0 0 24 24">
                   <path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0024 12c0-6.63-5.37-12-12-12z" />
                 </svg>
               )}
@@ -684,94 +1195,10 @@ export default function AuthPage() {
           </div>
         )}
 
-        {/* --- METHOD 3: CLASSIC PHONE / PASSWORD LOGIN --- */}
-        {authMode === "password" && (
-          <form onSubmit={handlePasswordSubmit} className="space-y-4">
-            {isSignUp && (
-              <div>
-                <label className="text-xs text-neu-muted font-semibold mb-1.5 block">
-                  {isUrdu ? "مکمل نام" : "Full Name"}
-                </label>
-                <input
-                  name="fullName"
-                  type="text"
-                  value={fullName}
-                  onChange={(e) => setFullName(e.target.value)}
-                  placeholder="Muhammad Ali"
-                  className="neu-input w-full px-4 py-2.5 text-sm text-neu-text focus:ring-2 focus:ring-[#15a0fa]"
-                  required
-                />
-              </div>
-            )}
-
-            <div>
-              <label className="text-xs text-neu-muted font-semibold mb-1.5 block">
-                {isUrdu ? "موبائل فون نمبر" : "Mobile Phone Number"}
-              </label>
-              <div className="relative">
-                <input
-                  name="phone"
-                  type="text"
-                  value={phone}
-                  onChange={(e) => setPhone(e.target.value)}
-                  placeholder="03001234567"
-                  className="neu-input w-full pl-10 pr-4 py-2.5 text-sm text-neu-text font-mono focus:ring-2 focus:ring-[#15a0fa]"
-                  required
-                />
-                <Smartphone className="w-4 h-4 text-[#15a0fa] absolute left-3.5 top-3" />
-              </div>
-            </div>
-
-            <div>
-              <label className="text-xs text-neu-muted font-semibold mb-1.5 block">
-                {isUrdu ? "پاس ورڈ" : "Password"}
-              </label>
-              <div className="relative">
-                <input
-                  name="password"
-                  type="password"
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  placeholder="••••••••"
-                  className="neu-input w-full pl-10 pr-4 py-2.5 text-sm text-neu-text focus:ring-2 focus:ring-[#15a0fa]"
-                  required
-                />
-                <Lock className="w-4 h-4 text-[#15a0fa] absolute left-3.5 top-3" />
-              </div>
-            </div>
-
-            <button
-              type="submit"
-              disabled={pending}
-              className="neu-btn-primary w-full py-3 text-sm font-bold text-white rounded-xl shadow-lg shadow-[#15a0fa]/30 transition-all hover:opacity-95 active:scale-98 disabled:opacity-50 flex items-center justify-center gap-2"
-            >
-              {pending ? (
-                <>
-                  <RefreshCw className="w-4 h-4 animate-spin" />
-                  <span>{isUrdu ? "توثیق کی جا رہی ہے..." : "Authenticating..."}</span>
-                </>
-              ) : (
-                <>
-                  <span>
-                    {isSignUp
-                      ? isUrdu
-                        ? "اکاؤنٹ بنائیں"
-                        : "Register Account"
-                      : isUrdu
-                        ? "لاگ ان کریں"
-                        : "Sign In"}
-                  </span>
-                  <ArrowRight className="w-4 h-4" />
-                </>
-              )}
-            </button>
-          </form>
-        )}
-
         {/* Footer Security Badge */}
-        <div className="mt-8 pt-4 border-t border-neu-muted/20 flex flex-col sm:flex-row items-center justify-between text-[11px] text-neu-muted gap-2">
+        <div className="mt-8 pt-4 border-t border-[#C5C3D8]/40 flex flex-col sm:flex-row items-center justify-between text-[11px] text-[#7E8299] gap-2">
           <div className="flex items-center gap-1.5">
-            <ShieldCheck className="w-3.5 h-3.5 text-emerald-500" />
+            <ShieldCheck className="w-3.5 h-3.5 text-emerald-600" />
             <span>256-Bit SSL Encrypted Session</span>
           </div>
           <span>FBR Digital Invoicing & Khata Protected</span>
@@ -780,3 +1207,4 @@ export default function AuthPage() {
     </div>
   );
 }
+

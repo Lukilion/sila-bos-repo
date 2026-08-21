@@ -46,37 +46,46 @@ export default async function FinancePage({
   ];
 
   return (
-    <div className="space-y-6">
-      {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 p-5 rounded-2xl bg-slate-900 border border-slate-800 shadow-md">
-        <div>
+    <div className="space-y-6 select-none">
+      {/* Header Banner */}
+      <div
+        id="finance-header"
+        className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 p-5 sm:p-6 rounded-2xl bg-[#EDEBF8]"
+        style={{
+          boxShadow: "-8px -8px 18px #FFFFFF, 8px 8px 18px #C5C3D8",
+        }}
+      >
+        <div className="space-y-1">
           <div className="flex items-center gap-2">
-            <span className="px-2 py-0.5 rounded bg-indigo-500/20 text-indigo-400 text-[10px] font-mono font-bold">
+            <span className="neu-pill-badge bg-[#EDEBF8] text-[#007BFF] font-mono">
               CASH FLOW & FISCAL
             </span>
-            <span className="text-xs text-slate-400">Daily Cash Book & Tax Transmissions</span>
+            <span className="text-label-12 text-[#7E8299]">Daily Cash Book & Tax Transmissions</span>
           </div>
-          <h1 className="text-xl font-bold text-white mt-1">
+          <h1 className="text-xl sm:text-2xl font-black text-[#3A3F58] tracking-tight">
             {isUrdu ? "مالیات، کیش بک و ایف بی آر ٹیکس" : "Finance, Cash Book & Invoices"}
           </h1>
-          <p className="text-xs text-slate-400">
+          <p className="text-xs text-[#7E8299] max-w-xl text-copy-14">
             {isUrdu
               ? "روزانہ روکڑ کیش بک، بینک اسٹیٹمنٹ، سپلائر ادائیگیاں اور ایف بی آر ڈیجیٹل انوائسز۔"
               : "Daily cash book, bank reconciliation, vendor payables, and FBR fiscal digital invoices."}
           </p>
         </div>
 
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-2.5 shrink-0">
           <Link
             href={`/${locale}/checkout`}
-            className="px-3.5 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-bold transition shadow-sm flex items-center gap-2"
+            className="neu-btn-primary h-10 px-4 rounded-2xl text-xs font-bold transition flex items-center gap-2 cursor-pointer active:scale-95"
           >
             <NavIcon name="ReceiptText" className="w-4 h-4" />
             <span>{isUrdu ? "ایف بی آر انوائس بنائیں" : "FBR Digital Invoice"}</span>
           </Link>
           <Link
             href={`/${locale}/investor`}
-            className="px-3.5 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-semibold border border-slate-700 transition"
+            className="neu-btn h-10 px-3.5 rounded-2xl text-xs font-semibold text-[#6C7293] hover:text-[#007BFF] transition flex items-center gap-2 cursor-pointer active:scale-95"
+            style={{
+              boxShadow: "-4px -4px 8px #FFFFFF, 4px 4px 8px #C5C3D8",
+            }}
           >
             {isUrdu ? "انویسٹر کھاتہ" : "Investor Stakes"}
           </Link>
@@ -84,40 +93,73 @@ export default async function FinancePage({
       </div>
 
       {/* Cash Flow Summary Cards */}
-      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-        <div className="p-4 rounded-2xl bg-slate-900 border border-slate-800">
-          <span className="text-xs text-slate-400 font-semibold">{isUrdu ? "نقد رقم (کیش ان ہینڈ)" : "Cash in Hand (Counter)"}</span>
-          <div className="text-xl font-black font-mono text-emerald-400 mt-2">PKR 485,000</div>
-          <span className="text-[10px] text-slate-500">Shah Alami Counter #1</span>
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-5">
+        <div
+          className="p-5 rounded-2xl bg-[#EDEBF8] min-h-[120px] flex flex-col justify-between"
+          style={{
+            boxShadow: "-5px -5px 10px #FFFFFF, 5px 5px 10px #C5C3D8",
+          }}
+        >
+          <span className="text-label-14 text-[#7E8299]">{isUrdu ? "نقد رقم (کیش ان ہینڈ)" : "Cash in Hand (Counter)"}</span>
+          <div className="text-xl sm:text-2xl font-black font-mono text-emerald-600 mt-2">PKR 485,000</div>
+          <span className="text-[10px] text-[#7E8299]">Shah Alami Counter #1</span>
         </div>
 
-        <div className="p-4 rounded-2xl bg-slate-900 border border-slate-800">
-          <span className="text-xs text-slate-400 font-semibold">{isUrdu ? "بینک بیلنس" : "Bank Accounts Total"}</span>
-          <div className="text-xl font-black font-mono text-indigo-400 mt-2">PKR 3,210,000</div>
-          <span className="text-[10px] text-slate-500">Meezan + HBL Accounts</span>
+        <div
+          className="p-5 rounded-2xl bg-[#EDEBF8] min-h-[120px] flex flex-col justify-between"
+          style={{
+            boxShadow: "-5px -5px 10px #FFFFFF, 5px 5px 10px #C5C3D8",
+          }}
+        >
+          <span className="text-label-14 text-[#7E8299]">{isUrdu ? "بینک بیلنس" : "Bank Accounts Total"}</span>
+          <div className="text-xl sm:text-2xl font-black font-mono text-[#007BFF] mt-2">PKR 3,210,000</div>
+          <span className="text-[10px] text-[#7E8299]">Meezan + HBL Accounts</span>
         </div>
 
-        <div className="p-4 rounded-2xl bg-slate-900 border border-slate-800">
-          <span className="text-xs text-slate-400 font-semibold">{isUrdu ? "سپلائر واجبات (پے ایبلز)" : "Vendor Payables"}</span>
-          <div className="text-xl font-black font-mono text-rose-400 mt-2">PKR 890,000</div>
-          <span className="text-[10px] text-slate-500">Due within 14 days</span>
+        <div
+          className="p-5 rounded-2xl bg-[#EDEBF8] min-h-[120px] flex flex-col justify-between"
+          style={{
+            boxShadow: "-5px -5px 10px #FFFFFF, 5px 5px 10px #C5C3D8",
+          }}
+        >
+          <span className="text-label-14 text-[#7E8299]">{isUrdu ? "سپلائر واجبات (پے ایبلز)" : "Vendor Payables"}</span>
+          <div className="text-xl sm:text-2xl font-black font-mono text-rose-600 mt-2">PKR 890,000</div>
+          <span className="text-[10px] text-[#7E8299]">Due within 14 days</span>
         </div>
       </div>
 
-      {/* Cash Book Journal Table */}
-      <div className="p-5 rounded-2xl bg-slate-900 border border-slate-800 shadow-md space-y-4">
+      {/* Cash Book Journal Table Card */}
+      <div
+        id="finance-journal-card"
+        className="p-5 sm:p-6 rounded-2xl bg-[#EDEBF8] space-y-4"
+        style={{
+          boxShadow: "-6px -6px 14px #FFFFFF, 6px 6px 14px #C5C3D8",
+        }}
+      >
         <div className="flex items-center justify-between">
-          <h2 className="text-sm font-bold text-white flex items-center gap-2">
-            <NavIcon name="Coins" className="w-4 h-4 text-indigo-400" />
+          <h2 className="text-heading-14 text-[#3A3F58] flex items-center gap-2">
+            <div
+              className="size-8 rounded-xl bg-[#EDEBF8] flex items-center justify-center text-[#007BFF]"
+              style={{
+                boxShadow: "-2px -2px 5px #FFFFFF, 2px 2px 5px #C5C3D8",
+              }}
+            >
+              <NavIcon name="Coins" className="w-4 h-4" />
+            </div>
             <span>{isUrdu ? "روزانہ روکڑ کیش بک لاگ" : "Daily Cash Book Ledger (روکڑ)"}</span>
           </h2>
-          <span className="text-xs text-slate-400 font-mono">Today&apos;s Transactions</span>
+          <span className="text-xs text-[#7E8299] font-mono font-bold">Today&apos;s Transactions</span>
         </div>
 
-        <div className="overflow-x-auto">
+        <div
+          className="rounded-2xl p-2 bg-[#EDEBF8] overflow-x-auto"
+          style={{
+            boxShadow: "inset 3px 3px 6px #C5C3D8, inset -3px -3px 6px #FFFFFF",
+          }}
+        >
           <table className="w-full text-xs text-start">
             <thead>
-              <tr className="border-b border-slate-800 text-slate-400 text-[11px] font-semibold">
+              <tr className="text-[#7E8299] text-[11px] font-semibold border-b border-[#C5C3D8]/50">
                 <th className="py-2.5 px-3 text-start">Entry ID</th>
                 <th className="py-2.5 px-3 text-start">Description</th>
                 <th className="py-2.5 px-3 text-start">Channel / Account</th>
@@ -125,27 +167,28 @@ export default async function FinancePage({
                 <th className="py-2.5 px-3 text-start">Type</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-slate-800/60">
+            <tbody className="divide-y divide-[#C5C3D8]/30">
               {entries.map((e) => (
-                <tr key={e.id} className="hover:bg-slate-800/40 transition">
+                <tr key={e.id} className="hover:bg-[#E2E0EE]/40 transition">
                   <td className="py-3 px-3">
-                    <div className="font-mono font-bold text-indigo-400">{e.id}</div>
-                    <div className="text-[10px] text-slate-500">{e.time}</div>
+                    <div className="font-mono font-bold text-[#007BFF]">{e.id}</div>
+                    <div className="text-[10px] text-[#7E8299]">{e.time}</div>
                   </td>
-                  <td className="py-3 px-3 text-slate-200 font-semibold">{e.description}</td>
-                  <td className="py-3 px-3 text-slate-400">{e.channel}</td>
+                  <td className="py-3 px-3 text-[#3A3F58] font-semibold">{e.description}</td>
+                  <td className="py-3 px-3 text-[#6C7293]">{e.channel}</td>
                   <td className="py-3 px-3 font-mono font-bold">
-                    <span className={e.type === "Credit" ? "text-emerald-400" : "text-rose-400"}>
+                    <span className={e.type === "Credit" ? "text-emerald-600" : "text-rose-600"}>
                       {e.amount}
                     </span>
                   </td>
                   <td className="py-3 px-3">
                     <span
-                      className={`px-2 py-0.5 rounded-full text-[10px] font-bold ${
-                        e.type === "Credit"
-                          ? "bg-emerald-500/20 text-emerald-300"
-                          : "bg-rose-500/20 text-rose-300"
+                      className={`neu-pill-badge bg-[#EDEBF8] ${
+                        e.type === "Credit" ? "text-emerald-600" : "text-rose-600"
                       }`}
+                      style={{
+                        boxShadow: "inset 1px 1px 3px #C5C3D8, inset -1px -1px 3px #FFFFFF",
+                      }}
                     >
                       {e.type}
                     </span>
@@ -159,4 +202,3 @@ export default async function FinancePage({
     </div>
   );
 }
-

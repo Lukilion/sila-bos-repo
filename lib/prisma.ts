@@ -352,6 +352,7 @@ const store = {
   damageLog: [] as any[],
   fbrInvoiceLog: [] as any[],
   auditLog: [] as any[],
+  emailOtp: [] as any[],
 };
 
 function createMockModel(modelName: keyof typeof store) {
@@ -438,6 +439,15 @@ function createMockModel(modelName: keyof typeof store) {
         return list.splice(idx, 1)[0];
       }
       return {};
+    },
+    deleteMany: async (args: any) => {
+      if (!store[modelName]) return { count: 0 };
+      const where = args?.where || {};
+      const initialLen = store[modelName].length;
+      store[modelName] = store[modelName].filter((item: any) => {
+        return !Object.entries(where).every(([k, v]) => item[k] === v);
+      });
+      return { count: initialLen - store[modelName].length };
     },
   };
 }

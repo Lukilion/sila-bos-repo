@@ -2,11 +2,15 @@
 
 import React, { useState, useRef, useEffect } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { useNavigation, ROLE_INFO } from "./NavigationContext";
 import { NAVIGATION_CONFIG, UserRole } from "@/lib/navigation-config";
 import { NavIcon } from "./NavIcon";
+import { logoutAction } from "@/actions/auth";
 
 export function TopGlobalHeader() {
+  const router = useRouter();
+  const [isLoggingOut, setIsLoggingOut] = useState(false);
   const {
     activeRole,
     setActiveRole,
@@ -44,6 +48,28 @@ export function TopGlobalHeader() {
   const quickCreateRef = useRef<HTMLDivElement>(null);
   const notifRef = useRef<HTMLDivElement>(null);
   const profileRef = useRef<HTMLDivElement>(null);
+
+  const handleLogout = async () => {
+    try {
+      setIsLoggingOut(true);
+      closeAllDropdowns();
+      showToast(isUrdu ? "لاگ آؤٹ ہو رہا ہے..." : "Logging out...");
+      await logoutAction(locale);
+    } catch (err) {
+      if (
+        err &&
+        typeof err === "object" &&
+        "digest" in err &&
+        typeof (err as { digest?: unknown }).digest === "string" &&
+        (err as { digest: string }).digest.includes("NEXT_REDIRECT")
+      ) {
+        return;
+      }
+      router.push(`/${locale}/login`);
+    } finally {
+      setIsLoggingOut(false);
+    }
+  };
 
   // Close dropdowns on outside click
   useEffect(() => {
@@ -708,11 +734,9 @@ export function TopGlobalHeader() {
 
                   <button
                     type="button"
-                    onClick={() => {
-                      setIsProfileMenuOpen(false);
-                      showToast(isUrdu ? "لاگ آؤٹ ہو گیا" : "Logged out successfully");
-                    }}
-                    className="w-full flex items-center gap-2.5 px-3 py-2 rounded-xl text-xs font-semibold text-rose-600 hover:text-rose-700 transition-all duration-200 cursor-pointer"
+                    onClick={handleLogout}
+                    disabled={isLoggingOut}
+                    className="w-full flex items-center gap-2.5 px-3 py-2 rounded-xl text-xs font-semibold text-rose-600 hover:text-rose-700 transition-all duration-200 cursor-pointer disabled:opacity-50"
                     onMouseEnter={(e) => {
                       e.currentTarget.style.boxShadow = "-2px -2px 5px #FFFFFF, 2px 2px 5px #C5C3D8";
                     }}
@@ -727,6 +751,25 @@ export function TopGlobalHeader() {
               </div>
             )}
           </div>
+
+          {/* 6. Dedicated Header Navbar Logout Button */}
+          <button
+            type="button"
+            id="header-nav-logout-btn"
+            onClick={handleLogout}
+            disabled={isLoggingOut}
+            className="h-10 px-3 sm:px-3.5 rounded-2xl bg-[#EDEBF8] flex items-center gap-2 text-rose-600 hover:text-rose-700 font-bold text-xs transition-all duration-200 ease-in-out cursor-pointer active:scale-95 disabled:opacity-50"
+            style={{
+              boxShadow: "-4px -4px 8px #FFFFFF, 4px 4px 8px #C5C3D8",
+            }}
+            title={isUrdu ? "سسٹم سے لاگ آؤٹ کریں" : "Sign out / Log Out from BOS"}
+            aria-label="Logout"
+          >
+            <NavIcon name="LogOut" className="w-4 h-4 text-rose-600 shrink-0" />
+            <span className="hidden sm:inline whitespace-nowrap">
+              {isUrdu ? "لاگ آؤٹ" : "Log Out"}
+            </span>
+          </button>
         </div>
       </div>
     </header>

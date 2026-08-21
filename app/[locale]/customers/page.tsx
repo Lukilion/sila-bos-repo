@@ -2,7 +2,6 @@ import React from "react";
 import Link from "next/link";
 import { NavIcon } from "@/components/navigation/NavIcon";
 
-
 export default async function CustomersPage({
   params,
 }: {
@@ -63,30 +62,36 @@ export default async function CustomersPage({
   ];
 
   return (
-    <div className="space-y-6">
-      {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 p-5 rounded-2xl bg-slate-900 border border-slate-800 shadow-md">
-        <div>
+    <div className="space-y-6 select-none">
+      {/* Header Banner */}
+      <div
+        id="customers-header"
+        className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 p-5 sm:p-6 rounded-2xl bg-[#EDEBF8]"
+        style={{
+          boxShadow: "-8px -8px 18px #FFFFFF, 8px 8px 18px #C5C3D8",
+        }}
+      >
+        <div className="space-y-1">
           <div className="flex items-center gap-2">
-            <span className="px-2 py-0.5 rounded bg-indigo-500/20 text-indigo-400 text-[10px] font-mono font-bold">
+            <span className="neu-pill-badge bg-[#EDEBF8] text-[#007BFF] font-mono">
               KHATA & RECEIVABLES
             </span>
-            <span className="text-xs text-slate-400">Customer Directory & Credit Ledger</span>
+            <span className="text-label-12 text-[#7E8299]">Customer Directory & Credit Ledger</span>
           </div>
-          <h1 className="text-xl font-bold text-white mt-1">
+          <h1 className="text-xl sm:text-2xl font-black text-[#3A3F58] tracking-tight">
             {isUrdu ? "گاہک ڈائرکٹری اور ادھار کھاتہ لیجر" : "Customers & B2B Khata Ledger"}
           </h1>
-          <p className="text-xs text-slate-400">
+          <p className="text-xs text-[#7E8299] max-w-xl text-copy-14">
             {isUrdu
               ? "گاہکوں کا ادھار بیلنس، کریڈٹ لمٹس، این ٹی این ٹیکس پروفائل اور قیمتوں کے درجے۔"
               : "Customer receivables ledger, credit caps, override approvals, and payment reconciliation."}
           </p>
         </div>
 
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-2 shrink-0">
           <Link
             href={`/${locale}/investor`}
-            className="px-3.5 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-bold transition shadow-sm flex items-center gap-2"
+            className="neu-btn-primary h-10 px-4 rounded-2xl text-xs font-bold transition flex items-center gap-2 cursor-pointer active:scale-95"
           >
             <NavIcon name="BookOpenCheck" className="w-4 h-4" />
             <span>{isUrdu ? "انویسٹر والٹ کھاتہ" : "Investor Khata Pool"}</span>
@@ -94,20 +99,38 @@ export default async function CustomersPage({
         </div>
       </div>
 
-      {/* Customer Directory Table */}
-      <div className="p-5 rounded-2xl bg-slate-900 border border-slate-800 shadow-md space-y-4">
+      {/* Customer Directory Card */}
+      <div
+        id="customers-table-card"
+        className="p-5 sm:p-6 rounded-2xl bg-[#EDEBF8] space-y-4"
+        style={{
+          boxShadow: "-6px -6px 14px #FFFFFF, 6px 6px 14px #C5C3D8",
+        }}
+      >
         <div className="flex items-center justify-between">
-          <h2 className="text-sm font-bold text-white flex items-center gap-2">
-            <NavIcon name="BookOpenCheck" className="w-4 h-4 text-indigo-400" />
+          <h2 className="text-heading-14 text-[#3A3F58] flex items-center gap-2">
+            <div
+              className="size-8 rounded-xl bg-[#EDEBF8] flex items-center justify-center text-[#007BFF]"
+              style={{
+                boxShadow: "-2px -2px 5px #FFFFFF, 2px 2px 5px #C5C3D8",
+              }}
+            >
+              <NavIcon name="BookOpenCheck" className="w-4 h-4" />
+            </div>
             <span>{isUrdu ? "تمام کھاتہ داران" : "Active Customer Khata Accounts"}</span>
           </h2>
-          <span className="text-xs text-slate-400 font-mono">Total Outstanding: PKR 661,000</span>
+          <span className="text-xs text-[#7E8299] font-mono font-bold">Total Outstanding: PKR 661,000</span>
         </div>
 
-        <div className="overflow-x-auto">
+        <div
+          className="rounded-2xl p-2 bg-[#EDEBF8] overflow-x-auto"
+          style={{
+            boxShadow: "inset 3px 3px 6px #C5C3D8, inset -3px -3px 6px #FFFFFF",
+          }}
+        >
           <table className="w-full text-xs text-start">
             <thead>
-              <tr className="border-b border-slate-800 text-slate-400 text-[11px] font-semibold">
+              <tr className="text-[#7E8299] text-[11px] font-semibold border-b border-[#C5C3D8]/50">
                 <th className="py-2.5 px-3 text-start">Customer / Shop Name</th>
                 <th className="py-2.5 px-3 text-start">Contact & Market</th>
                 <th className="py-2.5 px-3 text-start">Credit Limit</th>
@@ -117,27 +140,32 @@ export default async function CustomersPage({
                 <th className="py-2.5 px-3 text-start">Standing</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-slate-800/60">
+            <tbody className="divide-y divide-[#C5C3D8]/30">
               {customers.map((c) => {
                 const isOver = c.utilization > 100;
                 return (
-                  <tr key={c.id} className="hover:bg-slate-800/40 transition">
+                  <tr key={c.id} className="hover:bg-[#E2E0EE]/40 transition">
                     <td className="py-3 px-3">
-                      <div className="font-bold text-white">{c.name}</div>
-                      <div className="text-[10px] text-slate-500 font-mono">NTN: {c.ntn}</div>
+                      <div className="font-bold text-[#3A3F58]">{c.name}</div>
+                      <div className="text-[10px] text-[#7E8299] font-mono">NTN: {c.ntn}</div>
                     </td>
                     <td className="py-3 px-3">
-                      <div className="text-slate-200">{c.market}</div>
-                      <div className="text-[10px] text-slate-400">{c.phone}</div>
+                      <div className="text-[#6C7293] font-medium">{c.market}</div>
+                      <div className="text-[10px] text-[#7E8299]">{c.phone}</div>
                     </td>
-                    <td className="py-3 px-3 font-mono font-bold text-slate-300">{c.creditLimit}</td>
+                    <td className="py-3 px-3 font-mono font-bold text-[#3A3F58]">{c.creditLimit}</td>
                     <td className="py-3 px-3 font-mono font-bold">
-                      <span className={isOver ? "text-rose-400" : "text-emerald-400"}>
+                      <span className={isOver ? "text-rose-600" : "text-emerald-600"}>
                         {c.currentBalance}
                       </span>
                     </td>
                     <td className="py-3 px-3">
-                      <div className="w-24 bg-slate-800 h-2 rounded-full overflow-hidden mb-1">
+                      <div
+                        className="w-24 h-2 rounded-full p-0.5 bg-[#EDEBF8] overflow-hidden mb-1"
+                        style={{
+                          boxShadow: "inset 1px 1px 3px #C5C3D8, inset -1px -1px 3px #FFFFFF",
+                        }}
+                      >
                         <div
                           className={`h-full rounded-full ${
                             isOver ? "bg-rose-500" : c.utilization > 70 ? "bg-amber-500" : "bg-emerald-500"
@@ -145,16 +173,17 @@ export default async function CustomersPage({
                           style={{ width: `${Math.min(c.utilization, 100)}%` }}
                         />
                       </div>
-                      <span className="text-[10px] font-mono text-slate-400">{c.utilization}% used</span>
+                      <span className="text-[10px] font-mono text-[#7E8299]">{c.utilization}% used</span>
                     </td>
-                    <td className="py-3 px-3 text-indigo-300 font-medium">{c.priceTier}</td>
+                    <td className="py-3 px-3 text-[#007BFF] font-semibold">{c.priceTier}</td>
                     <td className="py-3 px-3">
                       <span
-                        className={`px-2 py-0.5 rounded-full text-[10px] font-bold ${
-                          isOver
-                            ? "bg-rose-500/20 text-rose-300"
-                            : "bg-emerald-500/20 text-emerald-300"
+                        className={`neu-pill-badge bg-[#EDEBF8] ${
+                          isOver ? "text-rose-600" : "text-emerald-600"
                         }`}
+                        style={{
+                          boxShadow: "inset 1px 1px 3px #C5C3D8, inset -1px -1px 3px #FFFFFF",
+                        }}
                       >
                         {c.status}
                       </span>
