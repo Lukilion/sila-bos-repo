@@ -12,15 +12,18 @@ export function NavigationToast() {
   return (
     <div
       id="navigation-toast"
-      className={`fixed bottom-16 md:bottom-6 ${
-        isUrdu ? "left-4" : "right-4"
-      } z-50 flex items-center gap-3 px-4 py-3 bg-slate-900 border border-indigo-500/50 text-white rounded-xl shadow-2xl shadow-indigo-950/50 animate-in slide-in-from-bottom-4 duration-200`}
+      className={`fixed bottom-20 md:bottom-6 ${
+        isUrdu ? "left-4 sm:left-6" : "right-4 sm:right-6"
+      } z-50 flex items-center gap-3 px-4 py-3 bg-[#EDEBF8] text-[#3A3F58] rounded-2xl animate-in slide-in-from-bottom-4 duration-200`}
+      style={{
+        boxShadow: "-6px -6px 14px #FFFFFF, 6px 6px 14px #C5C3D8",
+      }}
       role="status"
       aria-live="polite"
     >
-      <div className="w-2 h-2 rounded-full bg-indigo-400 animate-ping shrink-0" />
-      <span className="text-xs font-semibold">{toastMessage}</span>
-      <NavIcon name="Sparkles" className="w-4 h-4 text-indigo-400 shrink-0" />
+      <div className="w-2.5 h-2.5 rounded-full bg-[#007BFF] shadow-[0_0_8px_#007BFF] animate-pulse shrink-0" />
+      <span className="text-xs font-bold">{toastMessage}</span>
+      <NavIcon name="Sparkles" className="w-4 h-4 text-[#007BFF] shrink-0" />
     </div>
   );
 }

@@ -12,7 +12,6 @@ export function QuickCreateModal() {
     showToast,
   } = useNavigation();
 
-
   const [customerName, setCustomerName] = useState("Haji Rafiq & Sons");
   const [skuName, setSkuName] = useState("65W GaN Fast Charger");
   const [quantity, setQuantity] = useState("50");
@@ -73,97 +72,103 @@ export function QuickCreateModal() {
   return (
     <div
       id="quick-action-modal-backdrop"
-      className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/80 backdrop-blur-md animate-in fade-in duration-150"
+      className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-[#3A3F58]/40 backdrop-blur-sm animate-in fade-in duration-150"
       onClick={() => setActiveQuickAction(null)}
       role="dialog"
       aria-modal="true"
     >
       <div
         id="quick-action-modal-dialog"
-        className="w-full max-w-lg bg-slate-900 border border-slate-700/80 rounded-2xl shadow-2xl overflow-hidden animate-in zoom-in-95 duration-150 text-slate-100"
+        className="w-full max-w-lg bg-[#EDEBF8] rounded-3xl overflow-hidden animate-in zoom-in-95 duration-150 text-[#6C7293]"
+        style={{
+          boxShadow: "-10px -10px 25px #FFFFFF, 10px 10px 25px #C5C3D8",
+        }}
         onClick={(e) => e.stopPropagation()}
       >
         {/* Header */}
-        <div className="p-4 border-b border-slate-800 flex items-center justify-between bg-slate-950/60">
-          <div className="flex items-center gap-2.5">
-            <div className="p-2 rounded-lg bg-sky-500/20 text-[#15a0fa]">
-              <NavIcon name="FilePlus" className="w-5 h-5 text-[#15a0fa]" />
+        <div className="p-5 flex items-center justify-between">
+          <div className="flex items-center gap-3">
+            <div
+              className="p-2.5 rounded-2xl bg-[#EDEBF8] text-[#007BFF]"
+              style={{
+                boxShadow: "inset 2px 2px 4px #C5C3D8, inset -2px -2px 4px #FFFFFF",
+              }}
+            >
+              <NavIcon name="FilePlus" className="w-5 h-5 text-[#007BFF]" />
             </div>
             <div>
-              <h3 className="text-sm font-bold text-white">
+              <h3 className="text-sm font-extrabold text-[#3A3F58]">
                 {isUrdu ? title.ur : title.en}
               </h3>
-              <span className="text-[11px] text-slate-400">
+              <span className="text-[11px] text-[#7E8299]">
                 Shah Alami Wholesale Hub (LHR-SA-01)
               </span>
             </div>
           </div>
+
           <button
             type="button"
             onClick={() => setActiveQuickAction(null)}
-            className="p-1.5 rounded-lg text-[#15a0fa] hover:text-white hover:bg-slate-800 transition"
+            className="w-9 h-9 rounded-xl bg-[#EDEBF8] text-[#7E8299] hover:text-[#007BFF] flex items-center justify-center transition-all duration-200 cursor-pointer active:scale-95"
+            style={{
+              boxShadow: "-2px -2px 5px #FFFFFF, 2px 2px 5px #C5C3D8",
+            }}
+            aria-label="Close modal"
           >
-            <NavIcon name="X" className="w-5 h-5 text-[#15a0fa]" />
+            <NavIcon name="X" className="w-4 h-4 text-[#007BFF]" />
           </button>
         </div>
 
-        {/* Form Body */}
-        <form onSubmit={handleSubmit} className="p-4 sm:p-5 space-y-4">
+        {/* Modal Form */}
+        <form onSubmit={handleSubmit} className="p-5 pt-0 space-y-4">
           {activeQuickAction === "sales_order" && (
             <>
               <div>
-                <label className="block text-xs font-semibold text-slate-300 mb-1.5">
-                  {isUrdu ? "گاہک کا انتخاب" : "Customer / Party"}
+                <label className="block text-xs font-bold text-[#3A3F58] mb-1.5">
+                  {isUrdu ? "گاہک کا نام / کھاتہ" : "Customer / B2B Account"}
                 </label>
-                <select
+                <input
+                  type="text"
                   value={customerName}
                   onChange={(e) => setCustomerName(e.target.value)}
-                  className="w-full px-3 py-2 bg-slate-800 border border-slate-700 rounded-xl text-xs text-white focus:outline-none focus:ring-2 focus:ring-[#15a0fa]"
-                >
-                  <option value="Haji Rafiq & Sons">Haji Rafiq & Sons (Limit: PKR 250,000)</option>
-                  <option value="Lahore Tech Plaza">Lahore Tech Plaza (Limit: PKR 250,000)</option>
-                  <option value="Faisalabad Wholesalers">Faisalabad Wholesalers (Limit: PKR 500,000)</option>
-                </select>
+                  className="w-full bg-[#EDEBF8] text-xs font-semibold text-[#3A3F58] px-3.5 py-2.5 rounded-2xl focus:outline-none"
+                  style={{
+                    boxShadow: "inset 3px 3px 6px #C5C3D8, inset -3px -3px 6px #FFFFFF",
+                  }}
+                  required
+                />
               </div>
 
               <div className="grid grid-cols-2 gap-3">
                 <div>
-                  <label className="block text-xs font-semibold text-slate-300 mb-1.5">
-                    {isUrdu ? "پراڈکٹ / SKU" : "Product / SKU"}
+                  <label className="block text-xs font-bold text-[#3A3F58] mb-1.5">
+                    {isUrdu ? "پراڈکٹ / ایس کے یو" : "SKU Item"}
                   </label>
-                  <select
+                  <input
+                    type="text"
                     value={skuName}
                     onChange={(e) => setSkuName(e.target.value)}
-                    className="w-full px-3 py-2 bg-slate-800 border border-slate-700 rounded-xl text-xs text-white focus:outline-none focus:ring-2 focus:ring-[#15a0fa]"
-                  >
-                    <option value="65W GaN Fast Charger">65W GaN Fast Charger (PKR 1,450)</option>
-                    <option value="100W Type-C Cable">100W Type-C Cable (PKR 280)</option>
-                    <option value="OLED Display Panel">OLED Display Panel (PKR 14,200)</option>
-                  </select>
+                    className="w-full bg-[#EDEBF8] text-xs font-semibold text-[#3A3F58] px-3.5 py-2.5 rounded-2xl focus:outline-none"
+                    style={{
+                      boxShadow: "inset 3px 3px 6px #C5C3D8, inset -3px -3px 6px #FFFFFF",
+                    }}
+                    required
+                  />
                 </div>
                 <div>
-                  <label className="block text-xs font-semibold text-slate-300 mb-1.5">
-                    {isUrdu ? "تعداد (کارتن / لاٹ)" : "Quantity (Units)"}
+                  <label className="block text-xs font-bold text-[#3A3F58] mb-1.5">
+                    {isUrdu ? "تعداد (تھوک لاٹ)" : "Quantity (Units)"}
                   </label>
                   <input
                     type="number"
                     value={quantity}
                     onChange={(e) => setQuantity(e.target.value)}
-                    className="w-full px-3 py-2 bg-slate-800 border border-slate-700 rounded-xl text-xs text-white focus:outline-none focus:ring-2 focus:ring-[#15a0fa]"
+                    className="w-full bg-[#EDEBF8] text-xs font-semibold text-[#3A3F58] px-3.5 py-2.5 rounded-2xl focus:outline-none"
+                    style={{
+                      boxShadow: "inset 3px 3px 6px #C5C3D8, inset -3px -3px 6px #FFFFFF",
+                    }}
+                    required
                   />
-                </div>
-              </div>
-
-              <div className="p-3 rounded-xl bg-slate-950/60 border border-slate-800 text-xs space-y-1">
-                <div className="flex justify-between text-slate-400">
-                  <span>Wholesale Base Rate:</span>
-                  <span className="font-mono">PKR 1,450 / unit</span>
-                </div>
-                <div className="flex justify-between font-bold text-white pt-1 border-t border-slate-800">
-                  <span>Est. Total Order Value:</span>
-                  <span className="font-mono text-[#15a0fa]">
-                    PKR {(Number(quantity || 0) * 1450).toLocaleString()}
-                  </span>
                 </div>
               </div>
             </>
@@ -172,43 +177,52 @@ export function QuickCreateModal() {
           {activeQuickAction === "khata_entry" && (
             <>
               <div>
-                <label className="block text-xs font-semibold text-slate-300 mb-1.5">
-                  {isUrdu ? "گاہک کھاتہ" : "Customer Khata Account"}
+                <label className="block text-xs font-bold text-[#3A3F58] mb-1.5">
+                  {isUrdu ? "گاہک کا کھاتہ" : "Customer Khata Ledger"}
                 </label>
-                <select
+                <input
+                  type="text"
                   value={customerName}
                   onChange={(e) => setCustomerName(e.target.value)}
-                  className="w-full px-3 py-2 bg-slate-800 border border-slate-700 rounded-xl text-xs text-white focus:outline-none focus:ring-2 focus:ring-[#15a0fa]"
-                >
-                  <option value="Haji Rafiq & Sons">Haji Rafiq & Sons (Balance: PKR 184,000)</option>
-                  <option value="Lahore Tech Plaza">Lahore Tech Plaza (Balance: PKR 312,000)</option>
-                </select>
+                  className="w-full bg-[#EDEBF8] text-xs font-semibold text-[#3A3F58] px-3.5 py-2.5 rounded-2xl focus:outline-none"
+                  style={{
+                    boxShadow: "inset 3px 3px 6px #C5C3D8, inset -3px -3px 6px #FFFFFF",
+                  }}
+                  required
+                />
               </div>
 
               <div className="grid grid-cols-2 gap-3">
                 <div>
-                  <label className="block text-xs font-semibold text-slate-300 mb-1.5">
-                    {isUrdu ? "رقم (روپے)" : "Amount (PKR)"}
+                  <label className="block text-xs font-bold text-[#3A3F58] mb-1.5">
+                    {isUrdu ? "رقم (روپے)" : "Payment (PKR)"}
                   </label>
                   <input
                     type="number"
                     value={paymentAmount}
                     onChange={(e) => setPaymentAmount(e.target.value)}
-                    className="w-full px-3 py-2 bg-slate-800 border border-slate-700 rounded-xl text-xs text-white focus:outline-none focus:ring-2 focus:ring-[#15a0fa]"
+                    className="w-full bg-[#EDEBF8] text-xs font-semibold text-[#3A3F58] px-3.5 py-2.5 rounded-2xl focus:outline-none"
+                    style={{
+                      boxShadow: "inset 3px 3px 6px #C5C3D8, inset -3px -3px 6px #FFFFFF",
+                    }}
+                    required
                   />
                 </div>
                 <div>
-                  <label className="block text-xs font-semibold text-slate-300 mb-1.5">
-                    {isUrdu ? "طریقہ ادائیگی" : "Payment Mode"}
+                  <label className="block text-xs font-bold text-[#3A3F58] mb-1.5">
+                    {isUrdu ? "طریقہ کار" : "Method"}
                   </label>
                   <select
                     value={paymentMethod}
                     onChange={(e) => setPaymentMethod(e.target.value)}
-                    className="w-full px-3 py-2 bg-slate-800 border border-slate-700 rounded-xl text-xs text-white focus:outline-none focus:ring-2 focus:ring-[#15a0fa]"
+                    className="w-full bg-[#EDEBF8] text-xs font-semibold text-[#3A3F58] px-3.5 py-2.5 rounded-2xl focus:outline-none cursor-pointer"
+                    style={{
+                      boxShadow: "inset 3px 3px 6px #C5C3D8, inset -3px -3px 6px #FFFFFF",
+                    }}
                   >
                     <option value="Cash">Cash (روکڑ)</option>
-                    <option value="Bank Cheque">Bank Cheque (چیک)</option>
-                    <option value="Online Transfer">Online Raast / 1Link</option>
+                    <option value="Bank Transfer">Bank Transfer (بینک)</option>
+                    <option value="Cheque">Cross Cheque (چیک)</option>
                   </select>
                 </div>
               </div>
@@ -219,74 +233,75 @@ export function QuickCreateModal() {
             <>
               <div className="grid grid-cols-2 gap-3">
                 <div>
-                  <label className="block text-xs font-semibold text-slate-300 mb-1.5">
-                    {isUrdu ? "مرکزی گودام (منجانب)" : "Source Godown"}
+                  <label className="block text-xs font-bold text-[#3A3F58] mb-1.5">
+                    {isUrdu ? "منجانب گودام" : "From Warehouse"}
                   </label>
-                  <select
+                  <input
+                    type="text"
                     value={sourceGodown}
                     onChange={(e) => setSourceGodown(e.target.value)}
-                    className="w-full px-3 py-2 bg-slate-800 border border-slate-700 rounded-xl text-xs text-white focus:outline-none focus:ring-2 focus:ring-[#15a0fa]"
-                  >
-                    <option value="Main Godown A">Main Godown A (Gate 2)</option>
-                    <option value="Sub-Godown B">Sub-Godown B (Rang Mahal)</option>
-                  </select>
+                    className="w-full bg-[#EDEBF8] text-xs font-semibold text-[#3A3F58] px-3.5 py-2.5 rounded-2xl focus:outline-none"
+                    style={{
+                      boxShadow: "inset 3px 3px 6px #C5C3D8, inset -3px -3px 6px #FFFFFF",
+                    }}
+                    required
+                  />
                 </div>
                 <div>
-                  <label className="block text-xs font-semibold text-slate-300 mb-1.5">
-                    {isUrdu ? "منزل گودام (بنام)" : "Destination Godown"}
+                  <label className="block text-xs font-bold text-[#3A3F58] mb-1.5">
+                    {isUrdu ? "بنام گودام" : "To Warehouse"}
                   </label>
-                  <select
+                  <input
+                    type="text"
                     value={destGodown}
                     onChange={(e) => setDestGodown(e.target.value)}
-                    className="w-full px-3 py-2 bg-slate-800 border border-slate-700 rounded-xl text-xs text-white focus:outline-none focus:ring-2 focus:ring-[#15a0fa]"
-                  >
-                    <option value="Sub-Godown B">Sub-Godown B (Rang Mahal)</option>
-                    <option value="Main Godown A">Main Godown A (Gate 2)</option>
-                  </select>
+                    className="w-full bg-[#EDEBF8] text-xs font-semibold text-[#3A3F58] px-3.5 py-2.5 rounded-2xl focus:outline-none"
+                    style={{
+                      boxShadow: "inset 3px 3px 6px #C5C3D8, inset -3px -3px 6px #FFFFFF",
+                    }}
+                    required
+                  />
                 </div>
               </div>
+
               <div>
-                <label className="block text-xs font-semibold text-slate-300 mb-1.5">
-                  {isUrdu ? "تعداد" : "Transfer Quantity (Units)"}
+                <label className="block text-xs font-bold text-[#3A3F58] mb-1.5">
+                  {isUrdu ? "تعداد یونٹس" : "Transfer Quantity"}
                 </label>
                 <input
                   type="number"
                   value={quantity}
                   onChange={(e) => setQuantity(e.target.value)}
-                  className="w-full px-3 py-2 bg-slate-800 border border-slate-700 rounded-xl text-xs text-white focus:outline-none focus:ring-2 focus:ring-[#15a0fa]"
+                  className="w-full bg-[#EDEBF8] text-xs font-semibold text-[#3A3F58] px-3.5 py-2.5 rounded-2xl focus:outline-none"
+                  style={{
+                    boxShadow: "inset 3px 3px 6px #C5C3D8, inset -3px -3px 6px #FFFFFF",
+                  }}
+                  required
                 />
               </div>
             </>
           )}
 
-          {activeQuickAction === "export_bill" && (
-            <div className="p-4 rounded-xl bg-slate-950/60 border border-slate-800 text-xs space-y-2">
-              <p className="text-slate-300">
-                {isUrdu
-                  ? "تمام روزانہ ہول سیل انوائسز اور ایف بی آر ٹیکس کٹوتی سمری ڈاؤنلوڈ کے لیے تیار ہے۔"
-                  : "All daily sales orders, FBR digital invoice identifiers, and Khata postings will be compiled into CSV format."}
-              </p>
-              <div className="flex items-center gap-2 text-emerald-400 text-[11px] font-mono">
-                <NavIcon name="CheckCircle2" className="w-4 h-4 text-emerald-400" />
-                <span>Ready to download 48 records for current active fiscal day.</span>
-              </div>
-            </div>
-          )}
-
-          {/* Footer Buttons */}
-          <div className="pt-3 border-t border-slate-800 flex items-center justify-end gap-2.5">
+          {/* Action Buttons */}
+          <div className="pt-3 flex items-center justify-end gap-3">
             <button
               type="button"
               onClick={() => setActiveQuickAction(null)}
-              className="px-4 py-2 rounded-xl text-xs font-medium text-slate-400 hover:text-white hover:bg-slate-800 transition"
+              className="px-4 py-2 text-xs font-bold text-[#7E8299] hover:text-[#3A3F58] bg-[#EDEBF8] rounded-2xl transition-all duration-200 cursor-pointer active:scale-95"
+              style={{
+                boxShadow: "-2px -2px 5px #FFFFFF, 2px 2px 5px #C5C3D8",
+              }}
             >
-              {isUrdu ? "منسوخ کریں" : "Cancel"}
+              {isUrdu ? "منسوخ" : "Cancel"}
             </button>
             <button
               type="submit"
-              className="px-4 py-2 rounded-xl text-xs font-bold bg-[#15a0fa] hover:bg-[#0a84ff] text-white shadow-md shadow-[#15a0fa]/30 transition"
+              className="px-5 py-2 text-xs font-bold text-white bg-[#007BFF] hover:bg-[#0A84FF] rounded-2xl transition-all duration-200 cursor-pointer active:scale-95"
+              style={{
+                boxShadow: "-3px -3px 8px #FFFFFF, 3px 3px 8px rgba(0, 123, 255, 0.4)",
+              }}
             >
-              {isUrdu ? "محفوظ کریں" : "Commit Record"}
+              {isUrdu ? "محفوظ کریں" : "Save Record"}
             </button>
           </div>
         </form>

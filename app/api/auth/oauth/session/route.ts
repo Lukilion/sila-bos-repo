@@ -75,7 +75,7 @@ export async function POST(req: NextRequest) {
           phone: generatedPhone,
           passwordHash: "OAUTH_VERIFIED",
           role: assignedRole,
-          creditLimit: 0 as unknown as any,
+          creditLimit: 0 as unknown as number,
           creditDays: 30,
           isActive: true,
           createdAt: new Date(),

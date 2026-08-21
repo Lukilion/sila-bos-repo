@@ -16,22 +16,22 @@ function ShellInner({ children }: { children: React.ReactNode }) {
   return (
     <div
       id="enterprise-bos-shell"
-      className={`min-h-screen flex flex-col bg-slate-950 text-slate-100 antialiased ${
+      className={`min-h-screen flex flex-col bg-[#EDEBF8] text-[#6C7293] antialiased ${
         isUrdu ? "font-nastaleeq" : "font-sans"
       }`}
     >
-      {/* 1. Top Global Header */}
+      {/* 1. Top Control Bar (Horizontal Utility Header) */}
       <TopGlobalHeader />
 
-      {/* 2. Main Workspace Layout with Left Sidebar + Scrollable Viewport */}
-      <div className="flex-1 flex w-full relative overflow-hidden">
-        {/* Left Desktop Collapsible Sidebar */}
+      {/* 2. Main Workspace Layout with Left Tactile Sidebar + Scrollable Viewport */}
+      <div className="flex-1 flex w-full relative overflow-hidden bg-[#EDEBF8]">
+        {/* Left Desktop Collapsible Tactile Sidebar */}
         <DesktopSidebar />
 
         {/* Central Workspace Page Content */}
         <main
           id="main-workspace-content"
-          className="flex-1 overflow-y-auto min-h-[calc(100vh-57px)] pb-24 md:pb-8 p-3 sm:p-5 lg:p-6 bg-slate-950/40"
+          className="flex-1 overflow-y-auto min-h-[calc(100vh-60px)] pb-24 md:pb-8 p-3 sm:p-5 lg:p-6 bg-[#EDEBF8]"
         >
           <div className="max-w-7xl mx-auto w-full">{children}</div>
         </main>
@@ -49,7 +49,7 @@ function ShellInner({ children }: { children: React.ReactNode }) {
       {/* 6. Quick Create Action Dialog */}
       <QuickCreateModal />
 
-      {/* 7. Toast Alerts */}
+      {/* 7. Tactile Toast Alerts */}
       <NavigationToast />
     </div>
   );

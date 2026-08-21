@@ -17,6 +17,7 @@ export interface UserProfile {
   tenantName: string;
   hubLocation: string;
   avatarUrl?: string;
+  avatarText?: string;
 }
 
 interface NavigationContextType {
@@ -256,6 +257,7 @@ export function NavigationProvider({
     },
     tenantName: "Shah Alami Wholesale Hub",
     hubLocation: "Main Market Gate 2, Lahore",
+    avatarText: "MA",
   };
 
   return (

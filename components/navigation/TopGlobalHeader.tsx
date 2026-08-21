@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useRef, useEffect } from "react";
+import React, { useState, useRef, useEffect } from "react";
 import Link from "next/link";
 import { useNavigation, ROLE_INFO } from "./NavigationContext";
 import { NAVIGATION_CONFIG, UserRole } from "@/lib/navigation-config";
@@ -20,12 +20,9 @@ export function TopGlobalHeader() {
     toggleMobileDrawer,
     setIsSearchModalOpen,
     isQuickCreateOpen,
-
     setIsQuickCreateOpen,
     isNotificationsOpen,
     setIsNotificationsOpen,
-    isApprovalsOpen,
-    setIsApprovalsOpen,
     isProfileMenuOpen,
     setIsProfileMenuOpen,
     notifications,
@@ -42,9 +39,10 @@ export function TopGlobalHeader() {
     showToast,
   } = useNavigation();
 
+  const [activeNotifTab, setActiveNotifTab] = useState<"notifs" | "approvals">("notifs");
+
   const quickCreateRef = useRef<HTMLDivElement>(null);
   const notifRef = useRef<HTMLDivElement>(null);
-  const approvalsRef = useRef<HTMLDivElement>(null);
   const profileRef = useRef<HTMLDivElement>(null);
 
   // Close dropdowns on outside click
@@ -66,13 +64,6 @@ export function TopGlobalHeader() {
         setIsNotificationsOpen(false);
       }
       if (
-        isApprovalsOpen &&
-        approvalsRef.current &&
-        !approvalsRef.current.contains(target)
-      ) {
-        setIsApprovalsOpen(false);
-      }
-      if (
         isProfileMenuOpen &&
         profileRef.current &&
         !profileRef.current.contains(target)
@@ -86,111 +77,134 @@ export function TopGlobalHeader() {
   }, [
     isQuickCreateOpen,
     isNotificationsOpen,
-    isApprovalsOpen,
     isProfileMenuOpen,
     setIsQuickCreateOpen,
     setIsNotificationsOpen,
-    setIsApprovalsOpen,
     setIsProfileMenuOpen,
   ]);
 
-  const targetLocale = isUrdu ? "en-US" : "ur-PK";
-
   return (
     <header
-      id="top-global-header"
-      className="sticky top-0 z-30 w-full bg-slate-900/95 dark:bg-slate-950/95 backdrop-blur-md border-b border-slate-800/90 px-3 sm:px-5 py-2 text-slate-100 transition-colors shadow-sm"
+      id="top-tactile-header"
+      className="sticky top-0 z-30 w-full bg-[#EDEBF8] px-3 sm:px-6 py-2.5 text-[#6C7293] transition-all duration-200 ease-in-out select-none"
       role="banner"
     >
-      <div className="flex items-center justify-between gap-2 sm:gap-4 max-w-full">
-        {/* Left: Brand & Sidebar Toggle */}
+      <div className="flex items-center justify-between gap-3 sm:gap-6 max-w-full">
+        {/* Left Section: Mobile Drawer Trigger & Brand Indicator */}
         <div className="flex items-center gap-2 sm:gap-3 shrink-0">
-          {/* Mobile Hamburger Trigger */}
+          {/* Mobile Hamburger Trigger: Soft Raised Button */}
           <button
             type="button"
             id="mobile-drawer-toggle-btn"
             onClick={toggleMobileDrawer}
-            className="md:hidden p-2 rounded-lg text-[#15a0fa] hover:text-white hover:bg-slate-800 transition focus:outline-none focus:ring-2 focus:ring-[#15a0fa]"
+            className="md:hidden w-10 h-10 rounded-2xl bg-[#EDEBF8] flex items-center justify-center text-[#007BFF] transition-all duration-200 ease-in-out active:scale-95 cursor-pointer"
+            style={{
+              boxShadow: "-3px -3px 6px #FFFFFF, 3px 3px 6px #C5C3D8",
+            }}
             aria-label="Open mobile menu drawer"
           >
-            <NavIcon name="Menu" className="w-5 h-5 text-[#15a0fa]" />
+            <NavIcon name="Menu" className="w-5 h-5 text-[#007BFF]" />
           </button>
 
-          {/* Desktop Sidebar Collapse Toggle */}
+          {/* Collapsed Mode Sidebar Toggle (Desktop) */}
           <button
             type="button"
-            id="desktop-sidebar-collapse-btn"
+            id="header-sidebar-collapse-btn"
             onClick={toggleSidebar}
-            className="hidden md:flex items-center justify-center p-2 rounded-lg text-slate-400 hover:text-[#15a0fa] hover:bg-slate-800/80 transition focus:outline-none focus:ring-2 focus:ring-[#15a0fa]"
+            className="hidden md:flex w-10 h-10 rounded-2xl bg-[#EDEBF8] items-center justify-center text-[#7E8299] hover:text-[#007BFF] transition-all duration-200 ease-in-out cursor-pointer active:scale-95"
+            style={{
+              boxShadow: isSidebarCollapsed
+                ? "inset 2px 2px 4px #C5C3D8, inset -2px -2px 4px #FFFFFF"
+                : "-3px -3px 6px #FFFFFF, 3px 3px 6px #C5C3D8",
+            }}
             aria-label={isSidebarCollapsed ? "Expand sidebar" : "Collapse sidebar"}
             title={isSidebarCollapsed ? "Expand sidebar" : "Collapse sidebar"}
           >
             <NavIcon
-              name={isSidebarCollapsed ? (isUrdu ? "ChevronsLeft" : "ChevronsRight") : (isUrdu ? "ChevronsRight" : "ChevronsLeft")}
-              className="w-4 h-4 text-[#15a0fa] transition"
+              name={
+                isSidebarCollapsed
+                  ? isUrdu
+                    ? "ChevronsLeft"
+                    : "ChevronsRight"
+                  : isUrdu
+                  ? "ChevronsRight"
+                  : "ChevronsLeft"
+              }
+              className="w-4 h-4 text-[#007BFF]"
             />
           </button>
 
-          {/* Company Logo & Brand Name */}
+          {/* Mobile/Compact Brand Logo */}
           <Link
             href={`/${locale}/dashboard`}
             id="header-brand-logo"
-            className="flex items-center gap-2.5 group focus:outline-none focus:ring-2 focus:ring-[#15a0fa] rounded-lg p-1"
+            className="md:hidden flex items-center gap-2 group"
           >
-            <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-[#15a0fa] to-indigo-600 flex items-center justify-center text-white font-bold text-sm shadow-md shadow-[#15a0fa]/25 group-hover:scale-105 transition">
+            <div
+              className="w-9 h-9 rounded-2xl bg-[#EDEBF8] flex items-center justify-center text-[#007BFF] font-extrabold text-sm"
+              style={{
+                boxShadow: "-3px -3px 6px #FFFFFF, 3px 3px 6px #C5C3D8",
+              }}
+            >
               {NAVIGATION_CONFIG.brand.logoText}
             </div>
-            <div className="hidden sm:flex flex-col">
-              <div className="flex items-center gap-1.5">
-                <span className="font-bold text-sm tracking-tight text-white group-hover:text-[#15a0fa] transition">
-                  {NAVIGATION_CONFIG.brand.name}
-                </span>
-                <span className="text-[10px] font-mono px-1.5 py-0.2 rounded bg-sky-950/80 text-[#15a0fa] border border-[#15a0fa]/30">
-                  {NAVIGATION_CONFIG.brand.hubCode}
-                </span>
-              </div>
-              <span className="text-[11px] text-slate-400 leading-tight">
-                {isUrdu ? NAVIGATION_CONFIG.brand.tagline.ur : NAVIGATION_CONFIG.brand.tagline.en}
-              </span>
-            </div>
+            <span className="font-extrabold text-sm tracking-tight text-[#3A3F58]">
+              {NAVIGATION_CONFIG.brand.name}
+            </span>
           </Link>
         </div>
 
-        {/* Center: Global Search Bar (Cmd + K) */}
-        <div className="flex-1 max-w-md mx-2 hidden md:block">
+        {/* Center/Left: Recessed Search Channel with Cmd + K Shortcut */}
+        <div className="flex-1 max-w-xl mx-2 hidden sm:block">
           <button
             type="button"
             id="global-search-trigger"
             onClick={() => setIsSearchModalOpen(true)}
-            className="w-full flex items-center justify-between px-3.5 py-1.5 text-xs text-slate-400 bg-slate-800/70 hover:bg-slate-800 border border-slate-700/60 hover:border-[#15a0fa]/50 rounded-xl transition shadow-inner group focus:outline-none focus:ring-2 focus:ring-[#15a0fa]"
+            className="w-full flex items-center justify-between px-4 py-2 text-xs text-[#7E8299] hover:text-[#6C7293] bg-[#EDEBF8] rounded-2xl transition-all duration-200 ease-in-out cursor-pointer group"
+            style={{
+              boxShadow: "inset 3px 3px 6px #C5C3D8, inset -3px -3px 6px #FFFFFF",
+            }}
             aria-label="Global search across SKU, orders, and customer khata"
           >
-            <div className="flex items-center gap-2">
-              <NavIcon name="Search" className="w-4 h-4 text-[#15a0fa] group-hover:scale-110 transition" />
-              <span className="text-slate-400 group-hover:text-slate-200 text-xs">
-                {isUrdu ? "تلاش کریں (SKU، آرڈر نمبر، گاہک کھاتہ)..." : "Search SKU, Order #, Customer Khata..."}
+            <div className="flex items-center gap-2.5">
+              <NavIcon
+                name="Search"
+                className="w-4 h-4 text-[#007BFF] group-hover:scale-110 transition-transform duration-200"
+              />
+              <span className="text-xs font-medium text-[#7E8299] group-hover:text-[#6C7293]">
+                {isUrdu
+                  ? "تلاش کریں (SKU، آرڈر نمبر، گاہک کھاتہ)..."
+                  : "Search SKU, Order #, Customer Khata..."}
               </span>
             </div>
-            <kbd className="hidden lg:inline-flex items-center gap-0.5 px-1.5 py-0.5 text-[10px] font-mono font-medium text-[#15a0fa] bg-slate-900 border border-[#15a0fa]/30 rounded shadow-sm">
+            <kbd
+              className="inline-flex items-center gap-1 px-2 py-0.5 text-[10px] font-mono font-bold text-[#007BFF] bg-[#EDEBF8] rounded-lg"
+              style={{
+                boxShadow: "-2px -2px 4px #FFFFFF, 2px 2px 4px #C5C3D8",
+              }}
+            >
               <span className="text-xs">⌘</span>K
             </kbd>
           </button>
         </div>
 
-        {/* Right: Utility Cluster */}
-        <div className="flex items-center gap-1 sm:gap-2">
-          {/* Mobile Search Icon button */}
+        {/* Right Utility Cluster */}
+        <div className="flex items-center gap-2 sm:gap-3 shrink-0">
+          {/* Mobile Search Trigger Icon */}
           <button
             type="button"
             id="mobile-search-btn"
             onClick={() => setIsSearchModalOpen(true)}
-            className="md:hidden p-2 rounded-lg text-[#15a0fa] hover:text-white hover:bg-slate-800 transition"
+            className="sm:hidden w-10 h-10 rounded-2xl bg-[#EDEBF8] flex items-center justify-center text-[#007BFF] transition-all duration-200 ease-in-out active:scale-95 cursor-pointer"
+            style={{
+              boxShadow: "-3px -3px 6px #FFFFFF, 3px 3px 6px #C5C3D8",
+            }}
             aria-label="Search"
           >
-            <NavIcon name="Search" className="w-4 h-4 text-[#15a0fa]" />
+            <NavIcon name="Search" className="w-4 h-4 text-[#007BFF]" />
           </button>
 
-          {/* 1. Quick Create (+) Dropdown */}
+          {/* 1. Quick Create Button: Raised button '+ Create' with dropdown support */}
           <div className="relative" ref={quickCreateRef}>
             <button
               type="button"
@@ -199,28 +213,53 @@ export function TopGlobalHeader() {
                 closeAllDropdowns();
                 setIsQuickCreateOpen(!isQuickCreateOpen);
               }}
-              className="flex items-center gap-1.5 px-2.5 sm:px-3 py-1.5 text-xs font-semibold text-white bg-gradient-to-r from-[#15a0fa] to-indigo-600 hover:from-[#0a84ff] hover:to-indigo-500 active:brightness-90 rounded-lg shadow-sm shadow-[#15a0fa]/30 transition focus:outline-none focus:ring-2 focus:ring-[#15a0fa]"
+              className="flex items-center gap-1.5 px-3.5 sm:px-4 py-2 text-xs font-bold text-[#007BFF] bg-[#EDEBF8] rounded-2xl transition-all duration-200 ease-in-out cursor-pointer active:scale-95"
+              style={{
+                boxShadow: isQuickCreateOpen
+                  ? "inset 3px 3px 6px #C5C3D8, inset -3px -3px 6px #FFFFFF"
+                  : "-4px -4px 8px #FFFFFF, 4px 4px 8px #C5C3D8",
+              }}
               aria-expanded={isQuickCreateOpen}
               aria-haspopup="true"
               aria-label="Quick create new record"
             >
-              <NavIcon name="Plus" className="w-4 h-4 text-white" />
-              <span className="hidden sm:inline">{isUrdu ? "فوری اندراج" : "Quick Create"}</span>
-              <NavIcon name="ChevronDown" className={`w-3 h-3 text-white/90 transition-transform ${isQuickCreateOpen ? "rotate-180" : ""}`} />
+              <NavIcon name="Plus" className="w-4 h-4 text-[#007BFF]" />
+              <span className="hidden sm:inline">
+                {isUrdu ? "نیا اندراج" : "+ Create"}
+              </span>
+              <NavIcon
+                name="ChevronDown"
+                className={`w-3 h-3 text-[#007BFF] transition-transform duration-200 ${
+                  isQuickCreateOpen ? "rotate-180" : ""
+                }`}
+              />
             </button>
 
+            {/* Quick Create Dropdown: Neumorphic Raised Card */}
             {isQuickCreateOpen && (
               <div
                 id="quick-create-menu"
-                className={`absolute ${isUrdu ? "left-0" : "right-0"} mt-2 w-72 sm:w-80 bg-slate-900 border border-slate-700/80 rounded-xl shadow-2xl z-50 p-2 animate-in fade-in slide-in-from-top-2 duration-150`}
+                className={`absolute ${
+                  isUrdu ? "left-0" : "right-0"
+                } mt-3 w-72 sm:w-80 bg-[#EDEBF8] rounded-2xl z-50 p-3 animate-in fade-in zoom-in-95 duration-150`}
+                style={{
+                  boxShadow: "-8px -8px 18px #FFFFFF, 8px 8px 18px #C5C3D8",
+                }}
               >
-                <div className="px-3 py-2 border-b border-slate-800 flex items-center justify-between">
-                  <span className="text-xs font-bold uppercase tracking-wider text-slate-400">
+                <div className="px-3 py-2 flex items-center justify-between border-b border-[#C5C3D8]/40">
+                  <span className="text-xs font-bold uppercase tracking-wider text-[#7E8299]">
                     {isUrdu ? "فوری ایکشنز" : "Quick Actions"}
                   </span>
-                  <span className="text-[10px] text-[#15a0fa] font-mono font-semibold">Wholesale Ops</span>
+                  <span
+                    className="text-[10px] text-[#007BFF] font-mono font-bold px-2 py-0.5 rounded-full bg-[#EDEBF8]"
+                    style={{
+                      boxShadow: "inset 1px 1px 3px #C5C3D8, inset -1px -1px 3px #FFFFFF",
+                    }}
+                  >
+                    Wholesale BOS
+                  </span>
                 </div>
-                <div className="py-1 flex flex-col gap-1">
+                <div className="py-2 flex flex-col gap-1.5">
                   {NAVIGATION_CONFIG.quickCreateActions
                     .filter((action) => action.permittedRoles.includes(activeRole))
                     .map((action) => (
@@ -236,21 +275,37 @@ export function TopGlobalHeader() {
                               : `Triggered: ${action.label.en}`
                           );
                         }}
-                        className="w-full flex items-start gap-3 p-2 rounded-lg text-start hover:bg-slate-800/80 transition group"
+                        className="w-full flex items-start gap-3 p-2.5 rounded-xl text-start bg-[#EDEBF8] hover:text-[#007BFF] transition-all duration-200 ease-in-out cursor-pointer group"
+                        onMouseEnter={(e) => {
+                          e.currentTarget.style.boxShadow = "-2px -2px 5px #FFFFFF, 2px 2px 5px #C5C3D8";
+                        }}
+                        onMouseLeave={(e) => {
+                          e.currentTarget.style.boxShadow = "none";
+                        }}
                       >
-                        <div className="p-2 rounded-lg bg-slate-800 text-[#15a0fa] group-hover:bg-[#15a0fa] group-hover:text-white transition shrink-0 mt-0.5 shadow-sm">
+                        <div
+                          className="p-2 rounded-xl bg-[#EDEBF8] text-[#007BFF] transition-all duration-200 shrink-0 mt-0.5"
+                          style={{
+                            boxShadow: "inset 2px 2px 4px #C5C3D8, inset -2px -2px 4px #FFFFFF",
+                          }}
+                        >
                           <NavIcon name={action.icon} className="w-4 h-4" />
                         </div>
                         <div className="flex-1 min-w-0">
                           <div className="flex items-center justify-between">
-                            <span className="text-xs font-semibold text-slate-200 group-hover:text-white">
+                            <span className="text-xs font-bold text-[#3A3F58] group-hover:text-[#007BFF]">
                               {isUrdu ? action.label.ur : action.label.en}
                             </span>
-                            <kbd className="text-[10px] font-mono text-slate-400 bg-slate-800 px-1.5 py-0.5 rounded border border-slate-700">
+                            <kbd
+                              className="text-[10px] font-mono text-[#7E8299] bg-[#EDEBF8] px-1.5 py-0.5 rounded-md"
+                              style={{
+                                boxShadow: "inset 1px 1px 2px #C5C3D8, inset -1px -1px 2px #FFFFFF",
+                              }}
+                            >
                               {action.shortcut}
                             </kbd>
                           </div>
-                          <p className="text-[11px] text-slate-400 line-clamp-1 mt-0.5">
+                          <p className="text-[11px] text-[#7E8299] truncate mt-0.5">
                             {isUrdu ? action.description.ur : action.description.en}
                           </p>
                         </div>
@@ -261,349 +316,413 @@ export function TopGlobalHeader() {
             )}
           </div>
 
-          {/* 2. Language Toggle Pill [ EN | اردو ] */}
-          <button
-            type="button"
-            id="header-language-toggle"
-            onClick={() => setLocale(targetLocale)}
-            className="flex items-center bg-slate-800 hover:bg-slate-700/80 border border-slate-700 rounded-lg p-0.5 text-xs font-semibold transition focus:outline-none focus:ring-2 focus:ring-[#15a0fa]"
-            aria-label={`Switch language to ${isUrdu ? "English" : "Urdu"}`}
-            title={`Switch language to ${isUrdu ? "English" : "Urdu"}`}
+          {/* 2. Language Switcher: Inset pill track with raised toggle switch for [ EN | اردو ] */}
+          <div
+            className="flex items-center p-1 bg-[#EDEBF8] rounded-full"
+            style={{
+              boxShadow: "inset 3px 3px 6px #C5C3D8, inset -3px -3px 6px #FFFFFF",
+            }}
           >
-            <span
-              className={`px-2 py-1 rounded-md text-[11px] transition ${
-                !isUrdu ? "bg-[#15a0fa] text-white font-bold shadow-sm" : "text-slate-400 hover:text-slate-200"
+            <button
+              type="button"
+              id="lang-toggle-en"
+              onClick={() => {
+                if (isUrdu) setLocale("en-US");
+              }}
+              className={`px-2.5 py-1 text-[11px] font-bold rounded-full transition-all duration-200 ease-in-out cursor-pointer ${
+                !isUrdu
+                  ? "bg-[#EDEBF8] text-[#007BFF]"
+                  : "text-[#7E8299] hover:text-[#6C7293]"
               }`}
+              style={{
+                boxShadow: !isUrdu
+                  ? "-2px -2px 5px #FFFFFF, 2px 2px 5px #C5C3D8"
+                  : "none",
+              }}
+              aria-label="Switch to English"
             >
               EN
-            </span>
-            <span
-              className={`px-2 py-1 rounded-md text-[11px] font-nastaleeq transition ${
-                isUrdu ? "bg-[#15a0fa] text-white font-bold shadow-sm" : "text-slate-400 hover:text-slate-200"
+            </button>
+            <button
+              type="button"
+              id="lang-toggle-ur"
+              onClick={() => {
+                if (!isUrdu) setLocale("ur-PK");
+              }}
+              className={`px-2.5 py-1 text-[11px] font-bold rounded-full transition-all duration-200 ease-in-out cursor-pointer ${
+                isUrdu
+                  ? "bg-[#EDEBF8] text-[#007BFF]"
+                  : "text-[#7E8299] hover:text-[#6C7293]"
               }`}
+              style={{
+                boxShadow: isUrdu
+                  ? "-2px -2px 5px #FFFFFF, 2px 2px 5px #C5C3D8"
+                  : "none",
+              }}
+              aria-label="اردو میں تبدیل کریں"
             >
               اردو
-            </span>
-          </button>
+            </button>
+          </div>
 
-          {/* 3. Dark / Light Mode Toggle */}
-          <button
-            type="button"
-            id="header-theme-toggle"
-            onClick={toggleTheme}
-            className="p-2 rounded-lg text-[#15a0fa] hover:bg-slate-800 transition focus:outline-none focus:ring-2 focus:ring-[#15a0fa]"
-            aria-label={`Switch to ${theme === "dark" ? "light" : "dark"} mode`}
-            title={`Current: ${theme === "dark" ? "Dark Mode" : "Light Mode"}`}
-          >
-            {theme === "dark" ? (
-              <NavIcon name="Sun" className="w-4 h-4 text-amber-400 hover:text-amber-300" />
-            ) : (
-              <NavIcon name="Moon" className="w-4 h-4 text-[#15a0fa]" />
-            )}
-          </button>
-
-          {/* 4. Notification Center with Unread Counter */}
+          {/* 3. Alert / Notifications: Circular raised button with active red/blue dot indicator that depresses on click */}
           <div className="relative" ref={notifRef}>
             <button
               type="button"
-              id="header-notifications-btn"
+              id="notifications-btn"
               onClick={() => {
                 closeAllDropdowns();
                 setIsNotificationsOpen(!isNotificationsOpen);
               }}
-              className="relative p-2 rounded-lg text-[#15a0fa] hover:text-white hover:bg-slate-800 transition focus:outline-none focus:ring-2 focus:ring-[#15a0fa]"
+              className="relative w-10 h-10 rounded-full bg-[#EDEBF8] flex items-center justify-center text-[#7E8299] hover:text-[#007BFF] transition-all duration-200 ease-in-out cursor-pointer active:scale-95"
+              style={{
+                boxShadow: isNotificationsOpen
+                  ? "inset 3px 3px 6px #C5C3D8, inset -3px -3px 6px #FFFFFF"
+                  : "-4px -4px 8px #FFFFFF, 4px 4px 8px #C5C3D8",
+              }}
+              aria-label="System notifications and alerts"
               aria-expanded={isNotificationsOpen}
-              aria-label={`Notifications (${unreadNotificationCount} unread)`}
             >
-              <NavIcon name="Bell" className="w-4 h-4 text-[#15a0fa]" />
-              {unreadNotificationCount > 0 && (
-                <span className="absolute top-1 right-1 flex h-4 w-4 items-center justify-center rounded-full bg-[#15a0fa] text-[10px] font-bold text-white shadow-sm ring-2 ring-slate-900">
-                  {unreadNotificationCount}
-                </span>
+              <NavIcon name="Bell" className="w-4 h-4 text-[#007BFF]" />
+              {(unreadNotificationCount > 0 || pendingApprovalCount > 0) && (
+                <span className="absolute top-2 right-2 w-2 h-2 rounded-full bg-rose-500 shadow-[0_0_6px_#f43f5e] animate-pulse" />
               )}
             </button>
 
+            {/* Notifications Dropdown: Neumorphic Raised Floating Card */}
             {isNotificationsOpen && (
               <div
                 id="notifications-menu"
-                className={`absolute ${isUrdu ? "left-0" : "right-0"} mt-2 w-80 sm:w-96 bg-slate-900 border border-slate-700/80 rounded-xl shadow-2xl z-50 overflow-hidden animate-in fade-in slide-in-from-top-2 duration-150`}
+                className={`absolute ${
+                  isUrdu ? "left-0" : "right-0"
+                } mt-3 w-80 sm:w-96 bg-[#EDEBF8] rounded-2xl z-50 p-3.5 animate-in fade-in zoom-in-95 duration-150`}
+                style={{
+                  boxShadow: "-8px -8px 18px #FFFFFF, 8px 8px 18px #C5C3D8",
+                }}
               >
-                <div className="p-3 bg-slate-800/80 border-b border-slate-700/80 flex items-center justify-between">
-                  <div className="flex items-center gap-2">
-                    <NavIcon name="Bell" className="w-4 h-4 text-[#15a0fa]" />
-                    <span className="text-xs font-bold text-white">
-                      {isUrdu ? "اطلاعات و الرٹس" : "Notifications & Activity"}
-                    </span>
-                    {unreadNotificationCount > 0 && (
-                      <span className="px-1.5 py-0.2 rounded-full bg-sky-500/20 text-[#15a0fa] text-[10px] font-bold">
-                        {unreadNotificationCount} new
-                      </span>
-                    )}
+                {/* Header & Tabs */}
+                <div className="flex items-center justify-between pb-2.5 border-b border-[#C5C3D8]/40">
+                  <div
+                    className="flex items-center p-1 rounded-full bg-[#EDEBF8]"
+                    style={{
+                      boxShadow: "inset 2px 2px 4px #C5C3D8, inset -2px -2px 4px #FFFFFF",
+                    }}
+                  >
+                    <button
+                      type="button"
+                      onClick={() => setActiveNotifTab("notifs")}
+                      className={`px-3 py-1 rounded-full text-xs font-bold transition-all duration-200 ${
+                        activeNotifTab === "notifs"
+                          ? "bg-[#EDEBF8] text-[#007BFF]"
+                          : "text-[#7E8299]"
+                      }`}
+                      style={{
+                        boxShadow: activeNotifTab === "notifs"
+                          ? "-2px -2px 4px #FFFFFF, 2px 2px 4px #C5C3D8"
+                          : "none",
+                      }}
+                    >
+                      {isUrdu ? "اطلاعات" : "Alerts"} ({notifications.length})
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setActiveNotifTab("approvals")}
+                      className={`px-3 py-1 rounded-full text-xs font-bold transition-all duration-200 ${
+                        activeNotifTab === "approvals"
+                          ? "bg-[#EDEBF8] text-[#007BFF]"
+                          : "text-[#7E8299]"
+                      }`}
+                      style={{
+                        boxShadow: activeNotifTab === "approvals"
+                          ? "-2px -2px 4px #FFFFFF, 2px 2px 4px #C5C3D8"
+                          : "none",
+                      }}
+                    >
+                      {isUrdu ? "منظوریاں" : "Approvals"} ({approvals.length})
+                    </button>
                   </div>
-                  {unreadNotificationCount > 0 && (
+
+                  {activeNotifTab === "notifs" && unreadNotificationCount > 0 && (
                     <button
                       type="button"
                       onClick={markAllNotificationsAsRead}
-                      className="text-[11px] text-[#15a0fa] hover:underline font-medium transition"
+                      className="text-[11px] font-semibold text-[#007BFF] hover:underline cursor-pointer"
                     >
-                      {isUrdu ? "سب پڑھ لیں" : "Mark all read"}
+                      {isUrdu ? "سب پڑھ لیں" : "Mark read"}
                     </button>
                   )}
                 </div>
 
-                <div className="max-h-80 overflow-y-auto divide-y divide-slate-800">
-                  {notifications.length === 0 ? (
-                    <div className="p-6 text-center text-xs text-slate-500">
-                      {isUrdu ? "کوئی نئی اطلاع نہیں ہے" : "No recent notifications"}
-                    </div>
-                  ) : (
-                    notifications.map((n) => (
-                      <div
-                        key={n.id}
-                        onClick={() => markNotificationAsRead(n.id)}
-                        className={`p-3 text-start hover:bg-slate-800/60 transition cursor-pointer flex gap-3 ${
-                          !n.read ? "bg-sky-950/20" : ""
-                        }`}
-                      >
+                {/* Notifications Tab Content */}
+                {activeNotifTab === "notifs" ? (
+                  <div className="max-h-72 overflow-y-auto py-2 space-y-2 scrollbar-thin">
+                    {notifications.length === 0 ? (
+                      <div className="py-6 text-center text-xs text-[#7E8299]">
+                        {isUrdu ? "کوئی نئی اطلاع نہیں" : "No new notifications"}
+                      </div>
+                    ) : (
+                      notifications.map((notif) => (
                         <div
-                          className={`w-2 h-2 rounded-full mt-1.5 shrink-0 ${
-                            !n.read ? "bg-[#15a0fa] ring-2 ring-[#15a0fa]/40" : "bg-transparent"
+                          key={notif.id}
+                          onClick={() => markNotificationAsRead(notif.id)}
+                          className={`p-2.5 rounded-xl transition-all duration-200 cursor-pointer ${
+                            !notif.read ? "bg-[#EDEBF8]" : "bg-[#EDEBF8]/60"
                           }`}
-                        />
-                        <div className="flex-1 min-w-0">
-                          <div className="flex items-center justify-between gap-1">
-                            <h4 className="text-xs font-semibold text-slate-200 line-clamp-1">
-                              {isUrdu ? n.title.ur : n.title.en}
-                            </h4>
-                            <span className="text-[10px] text-slate-500 font-mono shrink-0">
-                              {n.time}
+                          style={{
+                            boxShadow: !notif.read
+                              ? "-2px -2px 5px #FFFFFF, 2px 2px 5px #C5C3D8"
+                              : "inset 1px 1px 3px #C5C3D8, inset -1px -1px 3px #FFFFFF",
+                          }}
+                        >
+                          <div className="flex items-center justify-between">
+                            <span className="text-xs font-bold text-[#3A3F58]">
+                              {isUrdu ? notif.title.ur : notif.title.en}
                             </span>
+                            <span className="text-[10px] text-[#7E8299]">{notif.time}</span>
                           </div>
-                          <p className="text-[11px] text-slate-400 mt-0.5 leading-snug">
-                            {isUrdu ? n.message.ur : n.message.en}
+                          <p className="text-[11px] text-[#7E8299] mt-0.5 line-clamp-2">
+                            {isUrdu ? notif.message.ur : notif.message.en}
                           </p>
                         </div>
-                      </div>
-                    ))
-                  )}
-                </div>
-
-                <div className="p-2 bg-slate-900 border-t border-slate-800 text-center">
-                  <Link
-                    href={`/${locale}/dashboard`}
-                    onClick={() => setIsNotificationsOpen(false)}
-                    className="text-[11px] text-[#15a0fa] hover:underline font-medium inline-flex items-center gap-1"
-                  >
-                    <span>{isUrdu ? "تمام لاگز دیکھیں" : "View Audit Trail & Log"}</span>
-                    <NavIcon name="ArrowUpRight" className="w-3 h-3 text-[#15a0fa]" />
-                  </Link>
-                </div>
-              </div>
-            )}
-          </div>
-
-          {/* 5. Pending Approvals & Alert Badge */}
-          <div className="relative" ref={approvalsRef}>
-            <button
-              type="button"
-              id="header-approvals-btn"
-              onClick={() => {
-                closeAllDropdowns();
-                setIsApprovalsOpen(!isApprovalsOpen);
-              }}
-              className="relative p-2 rounded-lg text-slate-400 hover:text-amber-400 hover:bg-slate-800 transition focus:outline-none focus:ring-2 focus:ring-amber-400"
-              aria-expanded={isApprovalsOpen}
-              aria-label={`Pending Approvals (${pendingApprovalCount})`}
-              title="Pending Approvals & Credit Limit Overrides"
-            >
-              <NavIcon name="AlertTriangle" className="w-4 h-4 text-amber-400" />
-              {pendingApprovalCount > 0 && (
-                <span className="absolute top-1 right-1 flex h-4 w-4 items-center justify-center rounded-full bg-amber-500 text-[10px] font-bold text-slate-950 shadow-sm ring-2 ring-slate-900 animate-pulse">
-                  {pendingApprovalCount}
-                </span>
-              )}
-            </button>
-
-            {isApprovalsOpen && (
-              <div
-                id="approvals-menu"
-                className={`absolute ${isUrdu ? "left-0" : "right-0"} mt-2 w-80 sm:w-96 bg-slate-900 border border-amber-500/40 rounded-xl shadow-2xl z-50 overflow-hidden animate-in fade-in slide-in-from-top-2 duration-150`}
-              >
-                <div className="p-3 bg-amber-500/10 border-b border-amber-500/20 flex items-center justify-between">
-                  <div className="flex items-center gap-2">
-                    <NavIcon name="ShieldAlert" className="w-4 h-4 text-amber-400" />
-                    <span className="text-xs font-bold text-amber-300">
-                      {isUrdu ? "زیر التوا منظوری و الرٹس" : "Pending Overrides & Triggers"}
-                    </span>
+                      ))
+                    )}
                   </div>
-                  <span className="px-2 py-0.5 rounded-full bg-amber-500/20 text-amber-300 text-[10px] font-bold font-mono">
-                    {pendingApprovalCount} Actionable
-                  </span>
-                </div>
-
-                <div className="max-h-80 overflow-y-auto divide-y divide-slate-800 p-1">
-                  {approvals.filter((a) => a.permittedRoles.includes(activeRole)).length === 0 ? (
-                    <div className="p-6 text-center text-xs text-slate-500">
-                      {isUrdu ? "کوئی زیر التوا منظوری نہیں ہے" : "All approvals reconciled. No pending overrides."}
-                    </div>
-                  ) : (
-                    approvals
-                      .filter((a) => a.permittedRoles.includes(activeRole))
-                      .map((appr) => (
-                        <div key={appr.id} className="p-3 rounded-lg bg-slate-950/40 m-1 border border-slate-800 flex flex-col gap-2">
+                ) : (
+                  // Approvals Tab Content
+                  <div className="max-h-72 overflow-y-auto py-2 space-y-2.5 scrollbar-thin">
+                    {approvals.length === 0 ? (
+                      <div className="py-6 text-center text-xs text-[#7E8299]">
+                        {isUrdu ? "کوئی زیر التوا منظوری نہیں" : "No pending approvals"}
+                      </div>
+                    ) : (
+                      approvals.map((appr) => (
+                        <div
+                          key={appr.id}
+                          className="p-3 rounded-2xl bg-[#EDEBF8] space-y-2"
+                          style={{
+                            boxShadow: "-2px -2px 5px #FFFFFF, 2px 2px 5px #C5C3D8",
+                          }}
+                        >
                           <div className="flex items-start justify-between gap-2">
                             <div>
-                              <span className="text-[10px] font-mono px-1.5 py-0.5 rounded bg-amber-500/20 text-amber-300 font-semibold uppercase">
-                                {appr.type.replace("_", " ")}
-                              </span>
-                              <h4 className="text-xs font-bold text-slate-200 mt-1">
+                              <h4 className="text-xs font-bold text-[#3A3F58]">
                                 {isUrdu ? appr.title.ur : appr.title.en}
                               </h4>
+                              <p className="text-[11px] text-[#7E8299] mt-0.5">
+                                {isUrdu ? appr.detail.ur : appr.detail.en}
+                              </p>
                             </div>
                             {appr.amount && (
-                              <span className="text-xs font-mono font-bold text-amber-400 shrink-0">
+                              <span
+                                className="text-[10px] font-mono font-bold px-2 py-0.5 rounded-full bg-[#EDEBF8] text-[#007BFF]"
+                                style={{
+                                  boxShadow: "inset 1px 1px 2px #C5C3D8, inset -1px -1px 2px #FFFFFF",
+                                }}
+                              >
                                 {appr.amount}
                               </span>
                             )}
                           </div>
-                          <p className="text-[11px] text-slate-400 leading-snug">
-                            {isUrdu ? appr.detail.ur : appr.detail.en}
-                          </p>
-                          <div className="flex items-center justify-end gap-2 pt-1 border-t border-slate-800">
+
+                          <div className="flex items-center justify-end gap-2 pt-1">
                             <button
                               type="button"
                               onClick={() => handleDismissApproval(appr.id)}
-                              className="px-2.5 py-1 rounded text-[11px] font-medium text-slate-400 hover:text-slate-200 hover:bg-slate-800 transition"
+                              className="px-2.5 py-1 rounded-xl text-[10px] font-bold text-[#7E8299] hover:text-rose-600 bg-[#EDEBF8]"
+                              style={{
+                                boxShadow: "-1px -1px 3px #FFFFFF, 1px 1px 3px #C5C3D8",
+                              }}
                             >
-                              {isUrdu ? "رد کریں" : "Dismiss"}
+                              {isUrdu ? "مسترد" : "Dismiss"}
                             </button>
                             <button
                               type="button"
                               onClick={() => handleApprove(appr.id)}
-                              className="px-3 py-1 rounded bg-amber-500 hover:bg-amber-400 text-slate-950 text-[11px] font-bold transition shadow-sm"
+                              className="px-3 py-1 rounded-xl text-[10px] font-bold text-white bg-[#007BFF] hover:bg-[#0A84FF]"
+                              style={{
+                                boxShadow: "-2px -2px 4px #FFFFFF, 2px 2px 4px rgba(0, 123, 255, 0.4)",
+                              }}
                             >
-                              {isUrdu ? "منظور کریں" : "Approve Override"}
+                              {isUrdu ? "منظور کریں" : "Approve"}
                             </button>
                           </div>
                         </div>
                       ))
-                  )}
-                </div>
+                    )}
+                  </div>
+                )}
               </div>
             )}
           </div>
 
-          {/* 6. User Profile Avatar & Dropdown */}
+          {/* 4. Theme Toggle: Circular raised button with Sun/Moon icon */}
+          <button
+            type="button"
+            id="theme-toggle-btn"
+            onClick={toggleTheme}
+            className="w-10 h-10 rounded-full bg-[#EDEBF8] flex items-center justify-center text-[#7E8299] hover:text-[#007BFF] transition-all duration-200 ease-in-out cursor-pointer active:scale-95"
+            style={{
+              boxShadow: "-4px -4px 8px #FFFFFF, 4px 4px 8px #C5C3D8",
+            }}
+            aria-label="Toggle visual theme"
+            title={`Switch mode`}
+          >
+            <NavIcon
+              name={theme === "dark" ? "Sun" : "Moon"}
+              className="w-4 h-4 text-[#007BFF]"
+            />
+          </button>
+
+          {/* 5. User Avatar: Raised circular frame with user status and tactile dropdown menu */}
           <div className="relative" ref={profileRef}>
             <button
               type="button"
-              id="header-profile-btn"
+              id="user-profile-menu-btn"
               onClick={() => {
                 closeAllDropdowns();
                 setIsProfileMenuOpen(!isProfileMenuOpen);
               }}
-              className="flex items-center gap-2 p-1 sm:px-2 sm:py-1 rounded-xl hover:bg-slate-800/80 transition focus:outline-none focus:ring-2 focus:ring-[#15a0fa]"
+              className="flex items-center gap-2 p-1 rounded-full bg-[#EDEBF8] transition-all duration-200 ease-in-out cursor-pointer active:scale-95"
+              style={{
+                boxShadow: isProfileMenuOpen
+                  ? "inset 3px 3px 6px #C5C3D8, inset -3px -3px 6px #FFFFFF"
+                  : "-4px -4px 8px #FFFFFF, 4px 4px 8px #C5C3D8",
+              }}
+              aria-label="User account menu"
               aria-expanded={isProfileMenuOpen}
-              aria-haspopup="true"
-              aria-label="User account and role selector"
             >
-              <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-full bg-gradient-to-tr from-[#15a0fa] to-indigo-600 text-white font-bold text-xs flex items-center justify-center ring-2 ring-[#15a0fa]/40">
-                {user.name.charAt(0)}
+              {/* Circular Avatar Frame */}
+              <div
+                className="w-8 h-8 rounded-full bg-[#EDEBF8] flex items-center justify-center text-[#007BFF] font-extrabold text-xs"
+                style={{
+                  boxShadow: "inset 2px 2px 4px #C5C3D8, inset -2px -2px 4px #FFFFFF",
+                }}
+              >
+                {user.avatarText}
               </div>
-              <div className="hidden lg:flex flex-col text-start">
-                <span className="text-xs font-bold text-slate-200 leading-tight line-clamp-1">{user.name}</span>
-                <span className="text-[10px] text-[#15a0fa] font-medium">
-                  {isUrdu ? user.roleTitle.ur : user.roleTitle.en}
+
+              <div className="hidden lg:flex flex-col text-start pr-2">
+                <span className="text-xs font-bold text-[#3A3F58] leading-tight">
+                  {user.name}
+                </span>
+                <span className="text-[10px] text-[#007BFF] font-semibold">
+                  {isUrdu ? ROLE_INFO[activeRole].ur : ROLE_INFO[activeRole].en}
                 </span>
               </div>
-              <NavIcon name="ChevronDown" className="hidden lg:block w-3 h-3 text-[#15a0fa]" />
             </button>
 
+            {/* Profile Dropdown Menu: Neumorphic Raised Floating Card */}
             {isProfileMenuOpen && (
               <div
-                id="profile-dropdown-menu"
-                className={`absolute ${isUrdu ? "left-0" : "right-0"} mt-2 w-72 sm:w-80 bg-slate-900 border border-slate-700/80 rounded-xl shadow-2xl z-50 p-2 animate-in fade-in slide-in-from-top-2 duration-150`}
+                id="user-profile-menu"
+                className={`absolute ${
+                  isUrdu ? "left-0" : "right-0"
+                } mt-3 w-72 bg-[#EDEBF8] rounded-2xl z-50 p-3.5 animate-in fade-in zoom-in-95 duration-150`}
+                style={{
+                  boxShadow: "-8px -8px 18px #FFFFFF, 8px 8px 18px #C5C3D8",
+                }}
               >
                 {/* User Info Header */}
-                <div className="p-3 bg-slate-800/60 rounded-lg border border-slate-800">
-                  <div className="flex items-center gap-3">
-                    <div className="w-10 h-10 rounded-full bg-gradient-to-tr from-[#15a0fa] to-indigo-600 text-white font-bold flex items-center justify-center text-sm shadow">
-                      {user.name.charAt(0)}
-                    </div>
-                    <div className="flex-1 min-w-0">
-                      <h4 className="text-xs font-bold text-white truncate">{user.name}</h4>
-                      <p className="text-[11px] text-slate-400 truncate">{user.email}</p>
-                      <div className="mt-1 flex items-center gap-1.5">
-                        <span className={`text-[10px] font-bold px-2 py-0.5 rounded border ${ROLE_INFO[activeRole].badgeColor}`}>
-                          {isUrdu ? ROLE_INFO[activeRole].ur : ROLE_INFO[activeRole].en}
-                        </span>
-                      </div>
-                    </div>
+                <div className="flex items-center gap-3 pb-3 border-b border-[#C5C3D8]/40">
+                  <div
+                    className="w-10 h-10 rounded-full bg-[#EDEBF8] flex items-center justify-center text-[#007BFF] font-bold text-sm"
+                    style={{
+                      boxShadow: "inset 2px 2px 4px #C5C3D8, inset -2px -2px 4px #FFFFFF",
+                    }}
+                  >
+                    {user.avatarText}
                   </div>
-                  <div className="mt-2 pt-2 border-t border-slate-700/50 flex justify-between items-center text-[10px] text-slate-400">
-                    <span>{user.tenantName}</span>
-                    <span className="text-emerald-400 font-mono">● Online</span>
+                  <div className="min-w-0">
+                    <p className="text-xs font-extrabold text-[#3A3F58] truncate">{user.name}</p>
+                    <p className="text-[10px] text-[#7E8299] truncate">{user.email}</p>
+                    <span
+                      className="inline-block mt-1 text-[9px] font-bold px-2 py-0.5 rounded-full bg-[#EDEBF8] text-[#007BFF]"
+                      style={{
+                        boxShadow: "inset 1px 1px 3px #C5C3D8, inset -1px -1px 3px #FFFFFF",
+                      }}
+                    >
+                      {isUrdu ? ROLE_INFO[activeRole].ur : ROLE_INFO[activeRole].en}
+                    </span>
                   </div>
                 </div>
 
-                {/* Role Switcher (Interactive RBAC simulation) */}
-                <div className="mt-2 pt-2 border-t border-slate-800">
-                  <div className="px-2 py-1 text-[10px] font-bold uppercase tracking-wider text-slate-400">
-                    {isUrdu ? "رول تبدیل کریں (RBAC سمولیشن)" : "Switch Active RBAC Role"}
-                  </div>
-                  <div className="grid grid-cols-1 gap-1 mt-1">
-                    {(["ADMIN", "WAREHOUSE_MANAGER", "SALES_REP", "SUDO"] as UserRole[]).map((roleKey) => (
+                {/* Role Switcher Section (Tactile Inset Tray) */}
+                <div className="py-3 border-b border-[#C5C3D8]/40">
+                  <label className="block text-[10px] font-bold uppercase tracking-wider text-[#7E8299] mb-2">
+                    {isUrdu ? "رول تبدیل کریں (مجاز رسائی)" : "Switch Wholesale Role"}
+                  </label>
+                  <div
+                    className="p-1 rounded-2xl bg-[#EDEBF8] flex flex-col gap-1"
+                    style={{
+                      boxShadow: "inset 2px 2px 5px #C5C3D8, inset -2px -2px 5px #FFFFFF",
+                    }}
+                  >
+                    {(["ADMIN", "WAREHOUSE_MANAGER", "SALES_REP", "SUDO"] as UserRole[]).map((r) => (
                       <button
-                        key={roleKey}
+                        key={r}
                         type="button"
                         onClick={() => {
-                          setActiveRole(roleKey);
-                          setIsProfileMenuOpen(false);
+                          setActiveRole(r);
+                          showToast(
+                            isUrdu
+                              ? `رول تبدیل: ${ROLE_INFO[r].ur}`
+                              : `Switched role to ${ROLE_INFO[r].en}`
+                          );
                         }}
-                        className={`w-full flex items-center justify-between px-2.5 py-1.5 rounded-lg text-xs transition ${
-                          activeRole === roleKey
-                            ? "bg-sky-500/20 text-[#15a0fa] font-bold border border-[#15a0fa]/40"
-                            : "text-slate-300 hover:bg-slate-800 hover:text-white"
+                        className={`w-full flex items-center justify-between px-2.5 py-1.5 rounded-xl text-xs font-semibold transition-all duration-200 cursor-pointer ${
+                          activeRole === r
+                            ? "bg-[#EDEBF8] text-[#007BFF] font-bold"
+                            : "text-[#7E8299] hover:text-[#3A3F58]"
                         }`}
+                        style={{
+                          boxShadow: activeRole === r
+                            ? "-2px -2px 5px #FFFFFF, 2px 2px 5px #C5C3D8"
+                            : "none",
+                        }}
                       >
-                        <span>{isUrdu ? ROLE_INFO[roleKey].ur : ROLE_INFO[roleKey].en}</span>
-                        {activeRole === roleKey && <NavIcon name="Check" className="w-3.5 h-3.5 text-[#15a0fa]" />}
+                        <span>{isUrdu ? ROLE_INFO[r].ur : ROLE_INFO[r].en}</span>
+                        {activeRole === r && (
+                          <span className="w-1.5 h-1.5 rounded-full bg-[#007BFF] shadow-[0_0_6px_#007BFF]" />
+                        )}
                       </button>
                     ))}
                   </div>
                 </div>
 
-                {/* Menu items */}
-                <div className="mt-2 pt-2 border-t border-slate-800 flex flex-col gap-0.5">
+                {/* Links: Profile & Logout */}
+                <div className="pt-2 flex flex-col gap-1">
                   <Link
-                    href={`/${locale}/sudo`}
+                    href={`/${locale}/settings`}
                     onClick={() => setIsProfileMenuOpen(false)}
-                    className="flex items-center gap-2.5 px-3 py-2 text-xs text-slate-300 hover:bg-slate-800 hover:text-white rounded-lg transition"
+                    className="flex items-center gap-2.5 px-3 py-2 rounded-xl text-xs font-semibold text-[#6C7293] hover:text-[#007BFF] transition-all duration-200"
+                    onMouseEnter={(e) => {
+                      e.currentTarget.style.boxShadow = "-2px -2px 5px #FFFFFF, 2px 2px 5px #C5C3D8";
+                    }}
+                    onMouseLeave={(e) => {
+                      e.currentTarget.style.boxShadow = "none";
+                    }}
                   >
-                    <NavIcon name="Settings" className="w-4 h-4 text-[#15a0fa]" />
-                    <span>{isUrdu ? "سسٹم سیٹنگز و کھاتہ" : "System Settings & Audit"}</span>
+                    <NavIcon name="Settings" className="w-4 h-4 text-[#007BFF]" />
+                    <span>{isUrdu ? "اکاؤنٹ سیٹنگز" : "Account Settings"}</span>
                   </Link>
 
                   <button
                     type="button"
                     onClick={() => {
                       setIsProfileMenuOpen(false);
-                      setIsSearchModalOpen(true);
+                      showToast(isUrdu ? "لاگ آؤٹ ہو گیا" : "Logged out successfully");
                     }}
-                    className="flex items-center gap-2.5 px-3 py-2 text-xs text-slate-300 hover:bg-slate-800 hover:text-white rounded-lg transition text-start"
+                    className="w-full flex items-center gap-2.5 px-3 py-2 rounded-xl text-xs font-semibold text-rose-600 hover:text-rose-700 transition-all duration-200 cursor-pointer"
+                    onMouseEnter={(e) => {
+                      e.currentTarget.style.boxShadow = "-2px -2px 5px #FFFFFF, 2px 2px 5px #C5C3D8";
+                    }}
+                    onMouseLeave={(e) => {
+                      e.currentTarget.style.boxShadow = "none";
+                    }}
                   >
-                    <NavIcon name="Keyboard" className="w-4 h-4 text-[#15a0fa]" />
-                    <span>{isUrdu ? "شارٹ کٹس (Cmd+K)" : "Keyboard Shortcuts (Cmd+K)"}</span>
+                    <NavIcon name="LogOut" className="w-4 h-4 text-rose-600" />
+                    <span>{isUrdu ? "لاگ آؤٹ" : "Log Out"}</span>
                   </button>
-
-                  <Link
-                    href={`/${locale}/login`}
-                    onClick={() => setIsProfileMenuOpen(false)}
-                    className="flex items-center gap-2.5 px-3 py-2 text-xs text-rose-400 hover:bg-rose-500/10 rounded-lg transition font-medium"
-                  >
-                    <NavIcon name="LogOut" className="w-4 h-4 text-rose-400" />
-                    <span>{isUrdu ? "لاگ آؤٹ کریں" : "Sign Out"}</span>
-                  </Link>
                 </div>
               </div>
             )}
