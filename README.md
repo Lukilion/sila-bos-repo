@@ -1,36 +1,81 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Sila BOS — Wholesale Business Operating System
 
-## Getting Started
+A modern, high-performance Business Operating System (BOS) purpose-built for high-volume wholesale commerce, multi-tier godowns/warehouses, FBR POS digital invoicing, real-time Khata ledger bookkeeping, and tactile batch order creation.
 
-First, run the development server:
+---
 
+## 🚀 Quick Deploy to Vercel
+
+[![Deploy with Vercel](https://vercel.com/button)](https://vercel.com/new)
+
+### 1. Import Repository
+1. Log in to [Vercel Dashboard](https://vercel.com).
+2. Click **Add New...** → **Project**.
+3. Import your GitHub / GitLab / Bitbucket repository.
+
+### 2. Configure Environment Variables
+In the Vercel Project Settings under **Environment Variables**, add:
+
+| Variable | Description | Example / Default |
+|---|---|---|
+| `NEXT_PUBLIC_APP_URL` | Production URL | `https://your-domain.vercel.app` |
+| `JWT_SECRET` | Secret key for JWT authentication | `your-secure-random-32-char-string` |
+| `DATABASE_URL` | PostgreSQL connection string | `postgresql://...` (Neon / Supabase / Postgres) |
+| `DIRECT_URL` | Direct connection string (Optional) | `postgresql://...` |
+
+*(Note: If `DATABASE_URL` is omitted, the app operates gracefully with its built-in resilient in-memory database).*
+
+### 3. Build & Output Settings
+Vercel automatically detects Next.js:
+- **Framework Preset**: Next.js
+- **Build Command**: `npm run build` *(runs `prisma generate && next build`)*
+- **Install Command**: `npm install`
+- **Output Directory**: `.next`
+
+---
+
+## 🛠️ Local Development & Setup
+
+### Prerequisites
+- Node.js 20+
+- npm or bun
+
+### Installation
 ```bash
+# Clone the repository
+git clone https://github.com/your-username/sila-bos.git
+cd sila-bos
+
+# Install dependencies (automatically runs prisma generate)
+npm install
+
+# Copy environment variables
+cp .env.example .env.local
+
+# Run the development server
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Visit [http://localhost:3000](http://localhost:3000) to view the application.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+---
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+## 📦 Key Capabilities & Architecture
 
-## Learn More
+- **Tactile Soft UI & Neumorphism**: Custom monochromatic depth lighting, raised tactile cards, and physics-driven interactive components.
+- **Physics-Based Batch Swiper (`/new-order`)**: 5-item batch bundles, interactive card deck gestures (swipe right to add, left to skip), keyboard shortcuts (`A`/`D`/`W`/`Z`), live quantity controls, and real-time audio synthesis.
+- **Triple-Entry Khata Ledger Engine**: Automatic invoice calculations, previous balance roll-forward, instant WhatsApp summary generation, and Excel/CSV exports.
+- **Bilingual & Multi-Tenant**: Full dual-language localization (Urdu & English transliteration) with RTL layout handling.
+- **Database Resilience**: Prisma ORM configured with PostgreSQL adapter (`@prisma/adapter-pg`) with automatic mock fallback for zero-configuration deployments.
+- **Enterprise RBAC**: Role-based access control supporting `SUDO`, `ADMIN`, `SELLER`, `SOURCING_AGENT`, and `INVESTOR` tiers.
 
-To learn more about Next.js, take a look at the following resources:
+---
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+## 📜 Scripts
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+| Script | Purpose |
+|---|---|
+| `npm run dev` | Start development server on port 3000 |
+| `npm run build` | Generate Prisma client and compile Next.js production build |
+| `npm run lint` | Run ESLint static analysis |
+| `npm start` | Run Next.js production server |
