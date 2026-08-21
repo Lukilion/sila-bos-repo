@@ -352,7 +352,6 @@ const store = {
   damageLog: [] as any[],
   fbrInvoiceLog: [] as any[],
   auditLog: [] as any[],
-  emailOtp: [] as any[],
 };
 
 function createMockModel(modelName: keyof typeof store) {

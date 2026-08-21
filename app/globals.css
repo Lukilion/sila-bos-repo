@@ -83,13 +83,42 @@
 }
 
 @layer components {
-  /* Raised Neumorphic Card */
+  /* Neumorphic shadow utilities matching standalone HTML */
   .neu-card {
-    background: var(--surface);
-    box-shadow: -8px -8px 18px var(--highlight), 8px 8px 18px var(--shadow-dark);
-    border-radius: 20px;
-    padding: var(--space-xl);
-    border: 0;
+    background: #EDEBF8;
+    box-shadow: -10px -10px 24px #FFFFFF, 10px 10px 24px #C5C3D8;
+  }
+  .neu-inset {
+    background: #EDEBF8;
+    box-shadow: inset 2px 2px 5px #C5C3D8, inset -2px -2px 5px #FFFFFF;
+  }
+  .neu-inset-tab {
+    background: #EDEBF8;
+    box-shadow: inset 3px 3px 6px #C5C3D8, inset -3px -3px 6px #FFFFFF;
+  }
+  .neu-btn {
+    background: #EDEBF8;
+    box-shadow: -3px -3px 7px #FFFFFF, 3px 3px 7px #C5C3D8;
+  }
+  .neu-btn-sm {
+    background: #EDEBF8;
+    box-shadow: -2px -2px 5px #FFFFFF, 2px 2px 5px #C5C3D8;
+  }
+  .neu-btn-primary {
+    background: #007BFF;
+    box-shadow: -3px -3px 8px rgba(255, 255, 255, 0.8), 3px 3px 8px rgba(0, 123, 255, 0.35);
+  }
+  .neu-btn-primary:hover {
+    background: #0069d9;
+  }
+  .neu-pill-badge {
+    box-shadow: inset 1px 1px 3px #C5C3D8, inset -1px -1px 3px #FFFFFF;
+  }
+  .neu-error-banner {
+    box-shadow: inset 2px 2px 5px #E0B4B4, inset -2px -2px 5px #FFFFFF;
+  }
+  .neu-success-banner {
+    box-shadow: inset 2px 2px 5px #B8DCC0, inset -2px -2px 5px #FFFFFF;
   }
 
   /* Soft / Sunken Surface */

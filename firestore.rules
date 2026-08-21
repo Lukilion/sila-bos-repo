@@ -18,11 +18,6 @@ service cloud.firestore {
       allow create: if isAuthenticated();
     }
 
-    // Email OTP collection for email verification
-    match /emailOtps/{otpId} {
-      allow read, write: if true; // Managed safely via app verification routines
-    }
-
     // Auth Audit logs
     match /authAuditLogs/{logId} {
       allow read: if isAuthenticated();

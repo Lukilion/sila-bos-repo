@@ -1,6 +1,7 @@
 "use client";
 
 import React from "react";
+import { usePathname } from "next/navigation";
 import { NavigationProvider, useNavigation } from "./NavigationContext";
 import { TopGlobalHeader } from "./TopGlobalHeader";
 import { DesktopSidebar } from "./DesktopSidebar";
@@ -12,6 +13,24 @@ import { NavigationToast } from "./NavigationToast";
 
 function ShellInner({ children }: { children: React.ReactNode }) {
   const { isUrdu } = useNavigation();
+  const pathname = usePathname();
+
+  const isAuthPage =
+    pathname?.includes("/login") || pathname?.includes("/signup");
+
+  if (isAuthPage) {
+    return (
+      <div
+        id="enterprise-bos-auth-shell"
+        className={`min-h-screen bg-[#DFDCF0] ${
+          isUrdu ? "font-nastaleeq" : "font-sans"
+        }`}
+      >
+        {children}
+        <NavigationToast />
+      </div>
+    );
+  }
 
   return (
     <div
